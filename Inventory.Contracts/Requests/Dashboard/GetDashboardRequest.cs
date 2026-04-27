@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Inventory.Contracts.Responses;
+using MediatR;
 
-namespace Inventory.Contracts.Requests.Dashboard
-{
-    internal class GetDashboardRequest
-    {
-    }
-}
+namespace Inventory.Contracts.Requests.Dashboard;
+
+public class GetDashboardRequest : IRequest<DashboardMetricsResponse> { }

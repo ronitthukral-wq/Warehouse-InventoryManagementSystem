@@ -1,12 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Identity;
 
-namespace Inventory.Models.Entities
+namespace Inventory.Models.Entities;
+
+public class ApplicationUser : IdentityUser
 {
-    internal class ApplicationUser
-    {
-    }
+    public int? WarehouseId { get; set; }
+    public virtual Warehouse? Warehouse { get; set; }
+
+    // Manually matching the BaseEntity "Contract"
+    public string? CreatedBy { get; set; }
+    public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
+    public string? UpdatedBy { get; set; }
+    public DateTime? UpdatedDate { get; set; }
 }

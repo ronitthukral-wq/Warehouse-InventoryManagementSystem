@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Inventory.Contracts.Responses;
+using MediatR;
 
-namespace Inventory.Contracts.Requests.Inventory
+namespace Inventory.Contracts.Requests.Inventory;
+
+public class GetStockByWarehouseRequest : IRequest<List<StockLevelResponse>>
 {
-    internal class GetStockByWarehouseRequest
-    {
-    }
+    public int WarehouseId { get; set; }
 }

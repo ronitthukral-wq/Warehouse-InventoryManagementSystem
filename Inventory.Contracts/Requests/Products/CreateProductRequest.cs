@@ -1,12 +1,12 @@
-﻿namespace Inventory.Contracts.Responses;
+﻿using Inventory.Contracts.Responses;
+using MediatR;
 
-public class ProductResponse
+namespace Inventory.Contracts.Requests.Products;
+
+public class CreateProductRequest : IRequest<ActionResponse>
 {
-    public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string SKU { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public int LowStockThreshold { get; set; }
-    // Optional: Total stock across all warehouses
-    public int TotalAvailableQuantity { get; set; }
 }

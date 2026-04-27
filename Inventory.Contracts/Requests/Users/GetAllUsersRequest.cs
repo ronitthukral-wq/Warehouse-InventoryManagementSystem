@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Inventory.Contracts.Responses;
+using MediatR;
 
-namespace Inventory.Contracts.Requests.Users
+namespace Inventory.Contracts.Requests.Users;
+
+public class GetAllUsersRequest : IRequest<List<UserResponse>>
 {
-    internal class GetAllUsersRequest
-    {
-    }
 }

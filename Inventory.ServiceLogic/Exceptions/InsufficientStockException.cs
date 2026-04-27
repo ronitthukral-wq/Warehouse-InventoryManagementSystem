@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace Inventory.ServiceLogic.Exceptions;
 
-namespace Inventory.ServiceLogic.Exceptions
+public class InsufficientStockException : Exception
 {
-    internal class InsufficientStockException
-    {
-    }
+    public InsufficientStockException(string message) : base(message) { }
 }

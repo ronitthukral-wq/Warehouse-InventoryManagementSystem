@@ -1,12 +1,35 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Inventory.Contracts.Requests.Users;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
-namespace WarehouseInventoryManagement.Controllers
+namespace Inventory.Web.Controllers;
+
+[Authorize(Roles = "Admin")]
+public class UserController : BaseController
 {
-    public class UserController : Controller
+    public async Task<IActionResult> Index()
     {
-        public IActionResult Index()
+        var users = await Mediator.Send(new GetAllUsersRequest());
+        return View(users);
+    }
+
+    public IActionResult Create() => View();
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create(CreateStoreManagerRequest request)
+    {
+        if (!ModelState.IsValid) return View(request);
+
+        var response = await Mediator.Send(request);
+
+        if (response.Success)
         {
-            return View();
+            TempData["Success"] = response.Message;
+            return RedirectToAction(nameof(Index));
         }
+
+        ModelState.AddModelError("", response.Message);
+        return View(request);
     }
 }

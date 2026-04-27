@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace Inventory.Contracts.Responses;
 
-namespace Inventory.Contracts.Responses
+public class DashboardMetricsResponse
 {
-    internal class DashboardMetricsResponse
-    {
-    }
+    public int TotalProducts { get; set; }
+    public int TotalStockQuantity { get; set; }
+    public int LowStockAlertsCount { get; set; }
+    public int PendingTransfersCount { get; set; }
+    public List<MovementHistoryResponse> RecentMovements { get; set; } = new();
 }

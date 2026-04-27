@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace Inventory.Contracts.Responses;
 
-namespace Inventory.Contracts.Responses
+public class ActionResponse
 {
-    internal class ActionResponse
-    {
-    }
+    public bool Success { get; set; }
+    public string Message { get; set; } = string.Empty;
 }

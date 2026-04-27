@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Inventory.Contracts.Responses;
+using MediatR;
 
-namespace Inventory.Contracts.Requests.Inventory
+namespace Inventory.Contracts.Requests.Inventory;
+
+public class CreateTransferRequest : IRequest<ActionResponse>
 {
-    internal class CreateTransferRequest
-    {
-    }
+    public int ProductId { get; set; }
+    public int ToWarehouseId { get; set; }
+    public int Quantity { get; set; }
 }

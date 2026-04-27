@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Inventory.Contracts.Responses;
+using MediatR;
 
-namespace Inventory.Contracts.Requests.Warehouses
+namespace Inventory.Contracts.Requests.Warehouses;
+
+public class DeleteWarehouseRequest : IRequest<ActionResponse>
 {
-    internal class DeleteWarehouseRequest
-    {
-    }
+    public int Id { get; set; }
 }

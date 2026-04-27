@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Inventory.Models.Entities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Inventory.Data.Configurations
+public class ProductConfiguration : IEntityTypeConfiguration<Product>
 {
-    internal class ProductConfiguration
+    public void Configure(EntityTypeBuilder<Product> builder)
     {
+        builder.HasIndex(p => p.SKU).IsUnique(); // SKU must be unique in DB
+        builder.Property(p => p.Name).HasMaxLength(100).IsRequired();
     }
 }

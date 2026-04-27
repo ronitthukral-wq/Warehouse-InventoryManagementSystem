@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Inventory.Contracts.Responses;
+using MediatR;
 
-namespace Inventory.Contracts.Requests.Users
+namespace Inventory.Contracts.Requests.Users;
+
+public class CreateStoreManagerRequest : IRequest<ActionResponse>
 {
-    internal class CreateStoreManagerRequest
-    {
-    }
+    public string Email { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
+    public int WarehouseId { get; set; } // Required to link SM to a specific location
 }

@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Inventory.Models.Enums
+﻿namespace Inventory.Models.Enums
 {
-    internal class TransferStatus
+    public enum TransferStatus
     {
+        Pending = 1,
+        Accepted = 2,
+        Rejected = 3
     }
 }

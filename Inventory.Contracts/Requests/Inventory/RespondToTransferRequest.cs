@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Inventory.Contracts.Responses;
+using MediatR;
 
-namespace Inventory.Contracts.Requests.Inventory
+namespace Inventory.Contracts.Requests.Inventory;
+
+public class RespondToTransferRequest : IRequest<ActionResponse>
 {
-    internal class RespondToTransferRequest
-    {
-    }
+    public int TransferRequestId { get; set; }
+    public bool Accept { get; set; } // True = Accepted, False = Rejected
 }

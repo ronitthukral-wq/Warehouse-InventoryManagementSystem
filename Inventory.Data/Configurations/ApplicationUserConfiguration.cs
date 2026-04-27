@@ -1,12 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Inventory.Models.Entities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Inventory.Data.Configurations
+public class ApplicationUserConfiguration : IEntityTypeConfiguration<ApplicationUser>
 {
-    internal class ApplicationUserConfiguration
+    public void Configure(EntityTypeBuilder<ApplicationUser> builder)
     {
+        // One Warehouse can have many Managers, but a Manager has one Warehouse
+        builder.HasOne(u => u.Warehouse)
+               .WithMany(w => w.Managers)
+               .HasForeignKey(u => u.WarehouseId)
+               .OnDelete(DeleteBehavior.Restrict);
     }
 }

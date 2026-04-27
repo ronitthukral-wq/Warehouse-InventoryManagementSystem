@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Inventory.Models.Enums
+﻿namespace Inventory.Models.Enums
 {
-    internal class MovementType
+    public enum MovementType
     {
+        Purchase = 1,     // Stock coming from a supplier
+        TransferIn = 2,   // Stock received from another warehouse
+        TransferOut = 3,  // Stock sent to another warehouse
+        Adjustment = 4    // Manual correction (e.g., breakage)
     }
 }
