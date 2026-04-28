@@ -1,0 +1,69 @@
+@using Inventory.Contracts.Requests.Users
+@model CreateStoreManagerRequest
+@{
+    ViewData["Title"] = "Register Store Manager";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card shadow border-0">
+            <div class="card-header bg-dark text-white d-flex align-items-center">
+                <i class="bi bi-person-plus-fill me-2"></i>
+                <h4 class="mb-0">New Store Manager Account</h4>
+            </div>
+            <div class="card-body p-4">
+                <p class="text-muted small mb-4">
+                    Create a Store Manager and assign them to an existing warehouse. The new
+                    user will be able to sign in immediately with the email and password below.
+                </p>
+
+                <form asp-action="Create" method="post" autocomplete="off">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label fw-semibold">Email Address</label>
+                        <input asp-for="Email" class="form-control" placeholder="manager@company.com" />
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label fw-semibold">Password</label>
+                        <input asp-for="Password" type="password" class="form-control" placeholder="Minimum 6 characters" />
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="WarehouseId" class="form-label fw-semibold">Assigned Warehouse</label>
+                        <select asp-for="WarehouseId"
+                                asp-items="ViewBag.Warehouses as SelectList"
+                                class="form-select">
+                            <option value="">-- Select a warehouse --</option>
+                        </select>
+                        <span asp-validation-for="WarehouseId" class="text-danger small"></span>
+                        <small class="form-text text-muted">
+                            Only existing warehouses appear here. Create a warehouse first if the list is empty.
+                        </small>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Role</label>
+                        <input class="form-control bg-light" readonly value="StoreManager" />
+                        <small class="form-text text-muted">Role is fixed for this form.</small>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i>Create Account
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
