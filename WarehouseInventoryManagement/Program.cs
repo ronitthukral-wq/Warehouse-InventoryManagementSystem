@@ -2,6 +2,7 @@ using Inventory.Data.Context;
 using Inventory.Models.Entities;
 using Inventory.Data;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.EntityFrameworkCore;
 using Inventory.ServiceLogic;
 
@@ -35,6 +36,15 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 // --- 3. MVC SERVICES ---
 builder.Services.AddControllersWithViews();
+
+// Allow Razor to resolve views in BOTH singular and plural folder names
+// (e.g. ProductController will look in /Views/Product/ AND /Views/Products/).
+// This keeps the project resilient to historical folder naming.
+builder.Services.Configure<RazorViewEngineOptions>(options =>
+{
+    options.ViewLocationFormats.Add("/Views/{1}s/{0}" + RazorViewEngine.ViewExtension);
+    options.ViewLocationFormats.Add("/Views/{1}es/{0}" + RazorViewEngine.ViewExtension);
+});
 
 builder.Services.AddServiceLogic();
 

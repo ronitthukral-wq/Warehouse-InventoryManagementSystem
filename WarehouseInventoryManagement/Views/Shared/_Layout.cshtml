@@ -17,8 +17,8 @@
                         <li class="nav-item"><a class="nav-link text-dark" asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
                         @if (User.IsInRole("Admin"))
                         {
-                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Warehouses" asp-action="Index">Warehouses</a></li>
-                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Products" asp-action="Index">Products</a></li>
+                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Warehouse" asp-action="Index">Warehouses</a></li>
+                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Product" asp-action="Index">Products</a></li>
                         }
                         @if (User.IsInRole("StoreManager"))
                         {

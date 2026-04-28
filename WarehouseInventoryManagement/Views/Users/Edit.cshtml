@@ -1,0 +1,55 @@
+﻿@using Inventory.Contracts.Requests.Users
+@model UpdateStoreManagerRequest
+@{
+    ViewData["Title"] = "Edit Store Manager";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card shadow border-0">
+            <div class="card-header bg-primary text-white d-flex align-items-center">
+                <i class="bi bi-pencil-square me-2"></i>
+                <h4 class="mb-0">Edit Store Manager</h4>
+            </div>
+            <div class="card-body p-4">
+                <p class="text-muted small mb-4">
+                    Update the email or reassign this Store Manager to a different warehouse.
+                    Leave the warehouse blank to unassign them.
+                </p>
+
+                <form asp-action="Edit" method="post" autocomplete="off">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="Id" />
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label fw-semibold">Email Address</label>
+                        <input asp-for="Email" class="form-control" />
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="WarehouseId" class="form-label fw-semibold">Assigned Warehouse</label>
+                        <select asp-for="WarehouseId"
+                                asp-items="ViewBag.Warehouses as SelectList"
+                                class="form-select">
+                            <option value="">-- Unassigned --</option>
+                        </select>
+                        <span asp-validation-for="WarehouseId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-1"></i>Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
