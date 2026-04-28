@@ -15,23 +15,15 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item"><a class="nav-link text-dark" asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
-
                         @if (User.IsInRole("Admin"))
                         {
                             <li class="nav-item"><a class="nav-link text-dark" asp-controller="Warehouse" asp-action="Index">Warehouses</a></li>
                             <li class="nav-item"><a class="nav-link text-dark" asp-controller="Product" asp-action="Index">Products</a></li>
                             <li class="nav-item"><a class="nav-link text-dark" asp-controller="User" asp-action="Index">Personnel</a></li>
-                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Inventory" asp-action="PendingTransfers">All Transfers</a></li>
-                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Inventory" asp-action="History">History</a></li>
                         }
-
                         @if (User.IsInRole("StoreManager"))
                         {
-                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Inventory" asp-action="MyStock">My Inventory</a></li>
-                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Product" asp-action="Index">Catalog</a></li>
-                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Inventory" asp-action="AddStock">Add Stock</a></li>
-                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Inventory" asp-action="RequestTransfer">Request Transfer</a></li>
-                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Inventory" asp-action="PendingTransfers">Incoming</a></li>
+                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Inventory" asp-action="PendingTransfers">Transfers</a></li>
                             <li class="nav-item"><a class="nav-link text-dark" asp-controller="Inventory" asp-action="History">History</a></li>
                         }
                     </ul>
@@ -45,10 +37,6 @@
             @if (TempData["Success"] != null)
             {
                 <div class="alert alert-success">@TempData["Success"]</div>
-            }
-            @if (TempData["Error"] != null)
-            {
-                <div class="alert alert-danger">@TempData["Error"]</div>
             }
             @RenderBody()
         </main>

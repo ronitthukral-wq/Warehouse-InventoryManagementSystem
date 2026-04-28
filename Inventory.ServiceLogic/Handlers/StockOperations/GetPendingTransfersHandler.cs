@@ -1,11 +1,11 @@
-using AutoMapper;
+﻿using AutoMapper;
 using Inventory.Contracts.Requests.Inventory;
 using Inventory.Contracts.Responses;
 using Inventory.Data.Context;
 using Inventory.Models.Enums;
-using Inventory.ServiceLogic.Abstractions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+
 
 namespace Inventory.ServiceLogic.Handlers.StockOperations;
 
@@ -13,45 +13,25 @@ public class GetPendingTransfersHandler : IRequestHandler<GetPendingTransfersReq
 {
     private readonly InventoryDbContext _db;
     private readonly IMapper _mapper;
-    private readonly ICurrentUserService _currentUser;
 
-    public GetPendingTransfersHandler(
-        InventoryDbContext db,
-        IMapper mapper,
-        ICurrentUserService currentUser)
+    public GetPendingTransfersHandler(InventoryDbContext db, IMapper mapper)
     {
         _db = db;
         _mapper = mapper;
-        _currentUser = currentUser;
     }
 
-    public async Task<List<TransferRequestResponse>> Handle(
-        GetPendingTransfersRequest request,
-        CancellationToken cancellationToken)
+    public async Task<List<TransferRequestResponse>> Handle(GetPendingTransfersRequest request, CancellationToken cancellationToken)
     {
-        var query = _db.TransferRequests
+        // 1. Fetch only 'Pending' status transfers to match TransferStatus enum logic
+        // 2. Include Product and Warehouse entities so AutoMapper can fill 'ProductName' and 'ToWarehouseName'
+        var pendingTransfers = await _db.TransferRequests
             .Include(t => t.Product)
-            .Include(t => t.FromWarehouse)
             .Include(t => t.ToWarehouse)
             .Where(t => t.Status == TransferStatus.Pending)
-            .AsNoTracking();
-
-        // Store Managers see only the transfers landing in THEIR warehouse,
-        // i.e. the inbox of approvals they need to make. Admin sees all.
-        if (_currentUser.IsStoreManager)
-        {
-            var warehouseId = await _currentUser.GetWarehouseIdAsync(cancellationToken);
-            if (warehouseId is null)
-            {
-                return new List<TransferRequestResponse>();
-            }
-            query = query.Where(t => t.ToWarehouseId == warehouseId.Value);
-        }
-
-        var pending = await query
-            .OrderByDescending(t => t.CreatedDate)
+            .AsNoTracking()
             .ToListAsync(cancellationToken);
 
-        return _mapper.Map<List<TransferRequestResponse>>(pending);
+        // 3. Map to the TransferRequestResponse list required by the request interface
+        return _mapper.Map<List<TransferRequestResponse>>(pendingTransfers);
     }
 }
