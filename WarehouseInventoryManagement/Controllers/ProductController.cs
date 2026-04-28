@@ -21,11 +21,20 @@ public class ProductController : BaseController
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(CreateProductRequest request)
     {
+        if (!ModelState.IsValid) return View(request);
+
         var response = await Mediator.Send(request);
-        if (response.Success) return RedirectToAction(nameof(Index));
+
+        if (response.Success)
+        {
+            // Use TempData to trigger the alert we added to the Dashboard
+            TempData["SuccessMessage"] = response.Message;
+            return RedirectToAction("Index", "Dashboard");
+        }
+
+        ModelState.AddModelError("", response.Message);
         return View(request);
     }
-
     public async Task<IActionResult> Details(int id)
     {
         var product = await Mediator.Send(new GetProductByIdRequest { Id = id });

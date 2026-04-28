@@ -1,5 +1,13 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
+﻿@foreach (var item in Model)
+{
+    <tr>
+        @* Update 'ProductName' to the property actually in your Response class *@
+        <td>@item.ProductName</td>
+        <td>@item.Quantity</td>
+        @* Ensure 'ToWarehouseName' matches your backend property exactly *@
+        <td>@item.ToWarehouseName</td>
+        @* Use 'Timestamp' if 'CreatedDate' is missing *@
+        <td>@item.Timestamp.ToShortDateString()</td>
+        @* ... rest of row *@
+    </tr>
 }

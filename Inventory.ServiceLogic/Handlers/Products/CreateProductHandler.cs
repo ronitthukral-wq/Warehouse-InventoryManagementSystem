@@ -14,19 +14,27 @@ public class CreateProductHandler : IRequestHandler<CreateProductRequest, Action
 
     public async Task<ActionResponse> Handle(CreateProductRequest request, CancellationToken cancellationToken)
     {
-        var product = new Product
+        try
         {
-            Name = request.Name,
-            SKU = request.SKU,
-            Description = request.Description,
-            LowStockThreshold = request.LowStockThreshold,
-            CreatedDate = DateTime.UtcNow,
-            CreatedBy = "Admin"
-        };
+            var product = new Product
+            {
+                Name = request.Name,
+                SKU = request.SKU,
+                Description = request.Description,
+                LowStockThreshold = request.LowStockThreshold,
+                CreatedDate = DateTime.UtcNow,
+                CreatedBy = "Admin"
+            };
 
-        _context.Products.Add(product);
-        await _context.SaveChangesAsync(cancellationToken);
+            _context.Products.Add(product);
+            await _context.SaveChangesAsync(cancellationToken);
 
-        return new ActionResponse { Success = true, Message = "Product created successfully." };
+            // Use the static helper method
+            return ActionResponse.Successful($"Product {product.Name} added successfully.");
+        }
+        catch (Exception ex)
+        {
+            return ActionResponse.Failure($"Error: {ex.Message}");
+        }
     }
 }

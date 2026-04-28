@@ -1,0 +1,31 @@
+﻿@model IEnumerable<WarehouseResponse>
+@{
+    ViewData["Title"] = "Warehouses";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Warehouses</h2>
+    <a asp-action="Create" class="btn btn-primary">Add New Warehouse</a>
+</div>
+
+<div class="row">
+    @foreach (var warehouse in Model)
+    {
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm h-100 border-0">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">@warehouse.Name</h5>
+                    <p class="card-text text-muted mb-4">
+                        <i class="bi bi-geo-alt"></i> @warehouse.Location
+                    </p>
+                    @* FIX: Removed the Capacity badge to resolve CS1061 *@
+                    <div class="d-flex justify-content-end">
+                        <div class="btn-group">
+                            <a asp-action="Edit" asp-route-id="@warehouse.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

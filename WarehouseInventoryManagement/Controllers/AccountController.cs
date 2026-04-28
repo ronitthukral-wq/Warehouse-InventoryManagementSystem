@@ -1,4 +1,5 @@
-﻿using Inventory.Models.Entities;
+﻿using Inventory.Contracts.Requests.Users;
+using Inventory.Models.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,35 +8,52 @@ namespace Inventory.Web.Controllers;
 public class AccountController : Controller
 {
     private readonly SignInManager<ApplicationUser> _signInManager;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public AccountController(SignInManager<ApplicationUser> signInManager)
+    public AccountController(
+        SignInManager<ApplicationUser> signInManager,
+        UserManager<ApplicationUser> userManager)
     {
         _signInManager = signInManager;
+        _userManager = userManager;
     }
 
     [HttpGet]
-    public IActionResult Login() => View();
+    public IActionResult Login()
+    {
+        // Check if user is already authenticated
+        if (User.Identity?.IsAuthenticated ?? false)
+        {
+            // Redirect to a main page, e.g., Products, since you have no HomeController
+            return RedirectToAction("Index", "Dashboard");
+        }
+        return View();
+    }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Login(string email, string password, bool rememberMe)
+    public async Task<IActionResult> Login(LoginRequest request)
     {
-        if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+        if (!ModelState.IsValid)
         {
-            ModelState.AddModelError("", "Email and Password are required.");
-            return View();
+            return View(request);
         }
 
-        var result = await _signInManager.PasswordSignInAsync(email, password, rememberMe, false);
+        // Identity-based login logic
+        var result = await _signInManager.PasswordSignInAsync(
+            request.Email,
+            request.Password,
+            request.RememberMe,
+            lockoutOnFailure: false);
 
         if (result.Succeeded)
         {
-            // Standard redirect to the Dashboard, which filters data by role internally
+            // Redirect to your primary functional area
             return RedirectToAction("Index", "Dashboard");
         }
 
-        ModelState.AddModelError("", "Invalid login attempt.");
-        return View();
+        ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+        return View(request);
     }
 
     [HttpPost]
@@ -43,6 +61,12 @@ public class AccountController : Controller
     public async Task<IActionResult> Logout()
     {
         await _signInManager.SignOutAsync();
-        return RedirectToAction("Login");
+        return RedirectToAction("Login", "Account");
+    }
+
+    [HttpGet]
+    public IActionResult AccessDenied()
+    {
+        return View();
     }
 }

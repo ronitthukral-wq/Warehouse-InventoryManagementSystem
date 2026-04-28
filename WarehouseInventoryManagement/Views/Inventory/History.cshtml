@@ -1,5 +1,58 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model IEnumerable<Inventory.Contracts.Responses.MovementHistoryResponse>
 @{
+    ViewData["Title"] = "Stock Movement History";
 }
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Stock Movement History</h2>
+    <div class="btn-group">
+        <a asp-action="AddStock" class="btn btn-success">Add Stock</a>
+        <a asp-action="RequestTransfer" class="btn btn-primary">Request Transfer</a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Product</th>
+                    <th>Warehouse</th>
+                    <th>Qty</th>
+                    <th>Action Type</th>
+                    <th>User</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">
+                            No movement history recorded yet.
+                        </td>
+                    </tr>
+                }
+                @foreach (var move in Model)
+                {
+                    <tr>
+                        @* Uses Timestamp to resolve CS1061 *@
+                        <td>@move.Timestamp.ToString("MMM dd, yyyy HH:mm")</td>
+                        <td><strong>@move.ProductName</strong></td>
+                        <td>@move.WarehouseName</td>
+                        <td>@move.Quantity</td>
+                        <td>
+                            @* Uses MovementType to resolve CS1061 *@
+                            @{
+                                var badgeClass = move.MovementType.Contains("Transfer") ? "bg-info" :
+                                                 move.MovementType.Contains("Purchase") ? "bg-success" : "bg-secondary";
+                            }
+                            <span class="badge @badgeClass">@move.MovementType</span>
+                        </td>
+                        <td><small class="text-muted">@move.PerformedBy</small></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

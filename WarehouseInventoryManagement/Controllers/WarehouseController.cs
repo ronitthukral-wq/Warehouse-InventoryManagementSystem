@@ -22,7 +22,15 @@ public class WarehouseController : BaseController
         if (!ModelState.IsValid) return View(request);
 
         var response = await Mediator.Send(request);
-        if (response.Success) return RedirectToAction(nameof(Index));
+
+        if (response.Success)
+        {
+            // Store the message for the next request
+            TempData["SuccessMessage"] = response.Message;
+
+            // Redirect specifically to the Dashboard
+            return RedirectToAction("Index", "Dashboard");
+        }
 
         ModelState.AddModelError("", response.Message);
         return View(request);
@@ -31,6 +39,35 @@ public class WarehouseController : BaseController
     public async Task<IActionResult> Edit(int id)
     {
         var warehouse = await Mediator.Send(new GetWarehouseByIdRequest { Id = id });
-        return View(warehouse);
+
+        if (warehouse == null) return NotFound();
+
+        // Map the Response to a Request model to fix the Type Mismatch
+        var model = new UpdateWarehouseRequest
+        {
+            Id = warehouse.Id,
+            Name = warehouse.Name,
+            Location = warehouse.Location
+        };
+
+        return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(UpdateWarehouseRequest request)
+    {
+        if (!ModelState.IsValid) return View(request);
+
+        var response = await Mediator.Send(request);
+
+        if (response.Success)
+        {
+            TempData["SuccessMessage"] = response.Message;
+            return RedirectToAction(nameof(Index));
+        }
+
+        ModelState.AddModelError("", response.Message);
+        return View(request);
     }
 }
