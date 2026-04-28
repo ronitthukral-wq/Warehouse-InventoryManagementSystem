@@ -1,8 +1,9 @@
-﻿using Inventory.Contracts.Requests.Inventory;
+using Inventory.Contracts.Requests.Inventory;
 using Inventory.Contracts.Responses;
 using Inventory.Data.Context;
 using Inventory.Models.Entities;
 using Inventory.Models.Enums;
+using Inventory.ServiceLogic.Abstractions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,24 +12,53 @@ namespace Inventory.ServiceLogic.Handlers.StockOperations;
 public class AddStockHandler : IRequestHandler<AddStockRequest, ActionResponse>
 {
     private readonly InventoryDbContext _context;
+    private readonly ICurrentUserService _currentUser;
 
-    public AddStockHandler(InventoryDbContext context) => _context = context;
+    public AddStockHandler(InventoryDbContext context, ICurrentUserService currentUser)
+    {
+        _context = context;
+        _currentUser = currentUser;
+    }
 
     public async Task<ActionResponse> Handle(AddStockRequest request, CancellationToken cancellationToken)
     {
-        // 1. Logic: Identify the Store Manager's warehouse (simplified for this context)
-        // In a real scenario, you'd fetch the WarehouseId from the logged-in user's claims
-        var warehouse = await _context.Warehouses.FirstOrDefaultAsync(cancellationToken);
-
-        if (warehouse == null) return new ActionResponse { Success = false, Message = "No warehouse found." };
-
-        // 2. Update or Create Stock record
-        var stock = await _context.Stocks.FirstOrDefaultAsync(s =>
-            s.ProductId == request.ProductId && s.WarehouseId == warehouse.Id, cancellationToken);
-
-        if (stock == null)
+        if (request.Quantity <= 0)
         {
-            stock = new Stock { ProductId = request.ProductId, WarehouseId = warehouse.Id, Quantity = request.Quantity };
+            return new ActionResponse { Success = false, Message = "Quantity must be greater than zero." };
+        }
+
+        // 1. Resolve the Store Manager's own warehouse.
+        var warehouseId = await _currentUser.GetWarehouseIdAsync(cancellationToken);
+        if (warehouseId is null)
+        {
+            return new ActionResponse
+            {
+                Success = false,
+                Message = "You are not assigned to a warehouse, so stock cannot be added."
+            };
+        }
+
+        // 2. Verify the product exists in the catalog.
+        var productExists = await _context.Products
+            .AnyAsync(p => p.Id == request.ProductId, cancellationToken);
+        if (!productExists)
+        {
+            return new ActionResponse { Success = false, Message = "Selected product does not exist." };
+        }
+
+        // 3. Update or create the Stock row for (product, warehouse).
+        var stock = await _context.Stocks.FirstOrDefaultAsync(s =>
+            s.ProductId == request.ProductId && s.WarehouseId == warehouseId.Value,
+            cancellationToken);
+
+        if (stock is null)
+        {
+            stock = new Stock
+            {
+                ProductId = request.ProductId,
+                WarehouseId = warehouseId.Value,
+                Quantity = request.Quantity
+            };
             _context.Stocks.Add(stock);
         }
         else
@@ -36,20 +66,24 @@ public class AddStockHandler : IRequestHandler<AddStockRequest, ActionResponse>
             stock.Quantity += request.Quantity;
         }
 
-        // 3. Log the Movement
-        var movement = new StockMovement
+        // 4. Audit log.
+        _context.StockMovements.Add(new StockMovement
         {
             ProductId = request.ProductId,
-            WarehouseId = warehouse.Id,
+            WarehouseId = warehouseId.Value,
             Quantity = request.Quantity,
             Type = MovementType.Purchase,
+            Note = request.Note,
             CreatedDate = DateTime.UtcNow,
-            CreatedBy = "StoreManager"
-        };
+            CreatedBy = _currentUser.Email ?? "StoreManager"
+        });
 
-        _context.StockMovements.Add(movement);
         await _context.SaveChangesAsync(cancellationToken);
 
-        return new ActionResponse { Success = true, Message = $"Added {request.Quantity} units to stock." };
+        return new ActionResponse
+        {
+            Success = true,
+            Message = $"Added {request.Quantity} unit(s) to your warehouse."
+        };
     }
 }

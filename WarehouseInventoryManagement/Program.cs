@@ -1,6 +1,8 @@
 using Inventory.Data.Context;
 using Inventory.Models.Entities;
 using Inventory.Data;
+using Inventory.ServiceLogic.Abstractions;
+using Inventory.Web.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.EntityFrameworkCore;
@@ -47,6 +49,11 @@ builder.Services.Configure<RazorViewEngineOptions>(options =>
 });
 
 builder.Services.AddServiceLogic();
+
+// Current-user abstraction: lets handlers know who is making the request
+// and which warehouse they manage, without coupling ServiceLogic to HTTP.
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
 // --- 5. MIDDLEWARE PIPELINE ---
 var app = builder.Build();
