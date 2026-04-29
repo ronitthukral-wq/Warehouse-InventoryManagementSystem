@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
-using Inventory.Models.Entities;
 using Inventory.Contracts.Responses;
+using Inventory.Models.Entities;
 
 namespace Inventory.ServiceLogic.Mappings;
 
@@ -11,18 +11,35 @@ public class MappingProfile : Profile
         CreateMap<Product, ProductResponse>();
         CreateMap<Warehouse, WarehouseResponse>();
 
-        CreateMap<StockMovement, MovementHistoryResponse>()
-            .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name))
-            .ForMember(dest => dest.WarehouseName, opt => opt.MapFrom(src => src.Warehouse.Name))
-            .ForMember(dest => dest.Timestamp, opt => opt.MapFrom(src => src.CreatedDate));
+        // Stock -> StockLevelResponse (used for "My Inventory" view + per-warehouse listings)
+        CreateMap<Stock, StockLevelResponse>()
+            .ForMember(d => d.Id, o => o.Ignore())
+            .ForMember(d => d.ProductName, o => o.MapFrom(s => s.Product.Name))
+            .ForMember(d => d.SKU, o => o.MapFrom(s => s.Product.SKU))
+            .ForMember(d => d.WarehouseName, o => o.MapFrom(s => s.Warehouse.Name))
+            .ForMember(d => d.LowStockThreshold, o => o.MapFrom(s => s.Product.LowStockThreshold));
 
-        // ApplicationUser -> UserResponse
-        // Role is intentionally Ignored here because Identity stores roles in a separate
-        // join table (AspNetUserRoles). The handler is responsible for populating Role
-        // via UserManager.GetRolesAsync to keep this mapping pure (SRP).
+        // StockMovement -> MovementHistoryResponse (audit log)
+        CreateMap<StockMovement, MovementHistoryResponse>()
+            .ForMember(d => d.ProductName, o => o.MapFrom(s => s.Product.Name))
+            .ForMember(d => d.WarehouseName, o => o.MapFrom(s => s.Warehouse.Name))
+            .ForMember(d => d.MovementType, o => o.MapFrom(s => s.Type.ToString()))
+            .ForMember(d => d.Timestamp, o => o.MapFrom(s => s.CreatedDate))
+            .ForMember(d => d.PerformedBy, o => o.MapFrom(s => s.CreatedBy ?? string.Empty));
+
+        // TransferRequest -> TransferRequestResponse (Direction + IsActionable filled by handler)
+        CreateMap<TransferRequest, TransferRequestResponse>()
+            .ForMember(d => d.Product, o => o.MapFrom(s => s.Product.Name))
+            .ForMember(d => d.FromWarehouseName, o => o.MapFrom(s => s.FromWarehouse.Name))
+            .ForMember(d => d.ToWarehouseName, o => o.MapFrom(s => s.ToWarehouse.Name))
+            .ForMember(d => d.Status, o => o.MapFrom(s => s.Status.ToString()))
+            .ForMember(d => d.Direction, o => o.Ignore())
+            .ForMember(d => d.IsActionable, o => o.Ignore());
+
+        // ApplicationUser -> UserResponse (Role filled by handler via UserManager)
         CreateMap<ApplicationUser, UserResponse>()
-            .ForMember(dest => dest.AssignedWarehouseName,
+            .ForMember(d => d.AssignedWarehouseName,
                 opt => opt.MapFrom(src => src.Warehouse != null ? src.Warehouse.Name : null))
-            .ForMember(dest => dest.Role, opt => opt.Ignore());
+            .ForMember(d => d.Role, opt => opt.Ignore());
     }
 }

@@ -11,22 +11,31 @@ public class GetMovementHistoryHandler : IRequestHandler<GetMovementHistoryReque
 {
     private readonly InventoryDbContext _db;
     private readonly IMapper _mapper;
+    private readonly ICurrentUserContext _currentUser;
 
-    public GetMovementHistoryHandler(InventoryDbContext db, IMapper mapper)
+    public GetMovementHistoryHandler(InventoryDbContext db, IMapper mapper, ICurrentUserContext currentUser)
     {
         _db = db;
         _mapper = mapper;
+        _currentUser = currentUser;
     }
 
     public async Task<List<MovementHistoryResponse>> Handle(GetMovementHistoryRequest request, CancellationToken cancellationToken)
     {
+        var actor = await _currentUser.GetAsync(cancellationToken);
+
         var query = _db.StockMovements
             .Include(m => m.Product)
             .Include(m => m.Warehouse)
             .AsNoTracking();
 
-        // If a WarehouseId is provided (e.g., for a Store Manager), filter the results
-        if (request.WarehouseId.HasValue)
+        // Store managers are silently scoped to their own warehouse, regardless of what they request.
+        // Admins may pass a WarehouseId filter or leave it null to see everything.
+        if (actor.IsStoreManager && actor.WarehouseId is int wid)
+        {
+            query = query.Where(m => m.WarehouseId == wid);
+        }
+        else if (request.WarehouseId.HasValue)
         {
             query = query.Where(m => m.WarehouseId == request.WarehouseId.Value);
         }

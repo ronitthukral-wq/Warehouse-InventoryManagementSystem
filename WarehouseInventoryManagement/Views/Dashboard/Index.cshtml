@@ -1,90 +1,231 @@
-﻿@{
-    ViewData["Title"] = "Admin Dashboard";
+﻿@model Inventory.Contracts.Responses.DashboardMetricsResponse
+@{
+    ViewData["Title"] = Model != null && Model.IsStoreManager ? "Store Manager Dashboard" : "Admin Dashboard";
     Layout = "_Layout";
 }
 
 <div class="container mt-4">
-    @if (TempData["SuccessMessage"] != null)
+    @if (TempData["Success"] != null)
     {
-        <div id="success-alert" class="alert alert-success alert-dismissible fade show shadow-sm border-0 mb-4" role="alert">
-            <div class="d-flex align-items-center">
-                <i class="bi bi-check-circle-fill fs-4 me-3"></i>
-                <div>
-                    <strong>Action Successful!</strong>
-                    <p class="mb-0 small">@TempData["SuccessMessage"]</p>
-                </div>
-            </div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 mb-4">
+            <strong>@TempData["Success"]</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 mb-4">
+            <strong>@TempData["Error"]</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }
 
-    <div class="p-5 mb-4 bg-light rounded-3 shadow-sm border">
-        <div class="container-fluid py-2">
-            <h1 class="display-5 fw-bold text-primary">Admin Control Panel</h1>
-            <p class="col-md-8 fs-5 text-muted">Welcome back. You have full administrative access to manage warehouses, products, and personnel.</p>
+    @if (Model != null && Model.IsStoreManager)
+    {
+        @* ----------------- STORE MANAGER VIEW ----------------- *@
+        <div class="p-4 mb-4 bg-light rounded-3 shadow-sm border">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <div>
+                    <h1 class="display-6 fw-bold text-primary mb-1">@(Model.WarehouseName ?? "My Warehouse")</h1>
+                    <p class="text-muted mb-0">Store Manager Portal</p>
+                </div>
+                <div class="btn-group">
+                    <a asp-controller="Inventory" asp-action="AddStock" class="btn btn-success">Add Stock</a>
+                    <a asp-controller="Inventory" asp-action="RequestTransfer" class="btn btn-primary">Request Transfer</a>
+                    <a asp-controller="Inventory" asp-action="PendingTransfers" class="btn btn-outline-secondary">Transfers</a>
+                </div>
+            </div>
         </div>
-    </div>
 
-    <div class="row g-4">
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body text-center p-4">
-                    <div class="bg-dark text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
-                        <i class="bi bi-building fs-3"></i>
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <h6 class="text-muted small text-uppercase">Products in Stock</h6>
+                        <h2 class="mb-0">@Model.TotalProducts</h2>
                     </div>
-                    <h3 class="card-title h4">Warehouses</h3>
-                    <p class="text-muted small">Monitor and manage storage locations across all regions.</p>
-                    <div class="d-grid gap-2">
-                        <a asp-controller="Warehouse" asp-action="Index" class="btn btn-dark">View List</a>
-                        <a asp-controller="Warehouse" asp-action="Create" class="btn btn-outline-dark">Add New Warehouse</a>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <h6 class="text-muted small text-uppercase">Total Units</h6>
+                        <h2 class="mb-0">@Model.TotalStockQuantity</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <h6 class="text-muted small text-uppercase">Low Stock Alerts</h6>
+                        <h2 class="mb-0 text-danger">@Model.LowStockAlertsCount</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <h6 class="text-muted small text-uppercase">Pending Transfers</h6>
+                        <h2 class="mb-0 text-warning">@Model.PendingTransfersCount</h2>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body text-center p-4">
-                    <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
-                        <i class="bi bi-box-seam fs-3"></i>
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white border-bottom">
+                        <strong>My Inventory</strong>
                     </div>
-                    <h3 class="card-title h4">Products</h3>
-                    <p class="text-muted small">Update catalog items, SKUs, and track inventory levels.</p>
-                    <div class="d-grid gap-2">
-                        <a asp-controller="Product" asp-action="Index" class="btn btn-success">Manage Inventory</a>
-                        <a asp-controller="Product" asp-action="Create" class="btn btn-outline-success">Add New SKU</a>
+                    <div class="card-body p-0">
+                        <table class="table table-hover mb-0 align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Product</th>
+                                    <th>SKU</th>
+                                    <th class="text-end">Qty</th>
+                                    <th class="text-end">Threshold</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (!Model.MyInventory.Any())
+                                {
+                                    <tr>
+                                        <td colspan="4" class="text-center py-4 text-muted">
+                                            No products in your warehouse yet. Use "Add Stock" once the admin has added products to the catalog.
+                                        </td>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    foreach (var s in Model.MyInventory)
+                                    {
+                                        <tr class="@(s.IsLowStock ? "table-warning" : "")">
+                                            <td><strong>@s.ProductName</strong></td>
+                                            <td><small class="text-muted">@s.SKU</small></td>
+                                            <td class="text-end">@s.Quantity</td>
+                                            <td class="text-end"><small>@s.LowStockThreshold</small></td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white border-bottom">
+                        <strong>Recent Activity</strong>
+                    </div>
+                    <div class="card-body p-0">
+                        <ul class="list-group list-group-flush">
+                            @if (!Model.RecentMovements.Any())
+                            {
+                                <li class="list-group-item text-muted text-center py-3">No activity yet.</li>
+                            }
+                            @foreach (var m in Model.RecentMovements)
+                            {
+                                <li class="list-group-item">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <strong>@m.ProductName</strong>
+                                            <span class="badge bg-secondary ms-1">@m.MovementType</span>
+                                        </div>
+                                        <span class="fw-bold">@m.Quantity</span>
+                                    </div>
+                                    <small class="text-muted">@m.Timestamp.ToString("MMM dd HH:mm") &middot; @m.PerformedBy</small>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        @* ----------------- ADMIN VIEW ----------------- *@
+        <div class="p-5 mb-4 bg-light rounded-3 shadow-sm border">
+            <div class="container-fluid py-2">
+                <h1 class="display-5 fw-bold text-primary">Admin Control Panel</h1>
+                <p class="col-md-8 fs-5 text-muted">Welcome back. You have full administrative access to manage warehouses, products, and personnel.</p>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <h6 class="text-muted small text-uppercase">Total Products</h6>
+                        <h2 class="mb-0">@(Model?.TotalProducts ?? 0)</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <h6 class="text-muted small text-uppercase">Total Units</h6>
+                        <h2 class="mb-0">@(Model?.TotalStockQuantity ?? 0)</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <h6 class="text-muted small text-uppercase">Low Stock Alerts</h6>
+                        <h2 class="mb-0 text-danger">@(Model?.LowStockAlertsCount ?? 0)</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <h6 class="text-muted small text-uppercase">Pending Transfers</h6>
+                        <h2 class="mb-0 text-warning">@(Model?.PendingTransfersCount ?? 0)</h2>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body text-center p-4">
-                    <div class="bg-info text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
-                        <i class="bi bi-people fs-3"></i>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <h3 class="card-title h4">Warehouses</h3>
+                        <p class="text-muted small">Monitor and manage storage locations across all regions.</p>
+                        <div class="d-grid gap-2">
+                            <a asp-controller="Warehouse" asp-action="Index" class="btn btn-dark">View List</a>
+                            <a asp-controller="Warehouse" asp-action="Create" class="btn btn-outline-dark">Add New Warehouse</a>
+                        </div>
                     </div>
-                    <h3 class="card-title h4">Personnel</h3>
-                    <p class="text-muted small">Manage access control for store managers and staff.</p>
-                    <div class="d-grid gap-2">
-                        <a asp-controller="User" asp-action="Index" class="btn btn-info text-white">Manage Users</a>
-                        <a asp-controller="User" asp-action="Create" class="btn btn-outline-info">Register Manager</a>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <h3 class="card-title h4">Products</h3>
+                        <p class="text-muted small">Add SKUs to the global catalog. Once added, every warehouse starts at qty&nbsp;0 and managers can stock them.</p>
+                        <div class="d-grid gap-2">
+                            <a asp-controller="Product" asp-action="Index" class="btn btn-success">Manage Catalog</a>
+                            <a asp-controller="Product" asp-action="Create" class="btn btn-outline-success">Add New SKU</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <h3 class="card-title h4">Personnel</h3>
+                        <p class="text-muted small">Manage Store Managers. Each warehouse can have only one manager.</p>
+                        <div class="d-grid gap-2">
+                            <a asp-controller="User" asp-action="Index" class="btn btn-info text-white">Manage Users</a>
+                            <a asp-controller="User" asp-action="Create" class="btn btn-outline-info">Register Manager</a>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    }
 </div>
-
-@section Scripts {
-    <script>
-        // Automatically hide the alert after 5 seconds
-        setTimeout(function() {
-            var alert = document.getElementById('success-alert');
-            if (alert) {
-                var bsAlert = new bootstrap.Alert(alert);
-                bsAlert.close();
-            }
-        }, 5000);
-    </script>
-}

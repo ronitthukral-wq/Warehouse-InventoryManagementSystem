@@ -1,18 +1,24 @@
 ﻿using Inventory.Contracts.Requests.Users;
 using Inventory.Contracts.Responses;
+using Inventory.Data.Context;
 using Inventory.Models.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace Inventory.ServiceLogic.Handlers.Users;
 
 public class UpdateStoreManagerHandler : IRequestHandler<UpdateStoreManagerRequest, ActionResponse>
 {
-    private readonly UserManager<ApplicationUser> _userManager;
+    private const string StoreManagerRole = "StoreManager";
 
-    public UpdateStoreManagerHandler(UserManager<ApplicationUser> userManager)
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly InventoryDbContext _db;
+
+    public UpdateStoreManagerHandler(UserManager<ApplicationUser> userManager, InventoryDbContext db)
     {
         _userManager = userManager;
+        _db = db;
     }
 
     public async Task<ActionResponse> Handle(UpdateStoreManagerRequest request, CancellationToken cancellationToken)
@@ -20,14 +26,29 @@ public class UpdateStoreManagerHandler : IRequestHandler<UpdateStoreManagerReque
         var user = await _userManager.FindByIdAsync(request.Id);
         if (user is null)
         {
-            return new ActionResponse { Success = false, Message = "Store manager not found." };
+            return ActionResponse.Failure("Store manager not found.");
         }
 
-        // Only allow editing StoreManager accounts to avoid Admins being silently re-assigned
         var roles = await _userManager.GetRolesAsync(user);
-        if (!roles.Contains("StoreManager"))
+        if (!roles.Contains(StoreManagerRole))
         {
-            return new ActionResponse { Success = false, Message = "Only Store Manager accounts can be edited here." };
+            return ActionResponse.Failure("Only Store Manager accounts can be edited here.");
+        }
+
+        // If a warehouse is being assigned, ensure it isn't already taken by someone else.
+        if (request.WarehouseId.HasValue && request.WarehouseId.Value > 0)
+        {
+            var warehouseExists = await _db.Warehouses
+                .AnyAsync(w => w.Id == request.WarehouseId.Value, cancellationToken);
+            if (!warehouseExists)
+            {
+                return ActionResponse.Failure("Selected warehouse does not exist.");
+            }
+
+            if (await WarehouseAlreadyHasManagerAsync(request.WarehouseId.Value, excludeUserId: user.Id))
+            {
+                return ActionResponse.Failure("This warehouse already has a Store Manager assigned.");
+            }
         }
 
         if (!string.IsNullOrWhiteSpace(request.Email) &&
@@ -40,18 +61,37 @@ public class UpdateStoreManagerHandler : IRequestHandler<UpdateStoreManagerReque
         }
 
         user.WarehouseId = request.WarehouseId;
+        user.UpdatedDate = DateTime.UtcNow;
+        user.UpdatedBy = "Admin";
 
         var result = await _userManager.UpdateAsync(user);
-
-        if (result.Succeeded)
+        if (!result.Succeeded)
         {
-            return new ActionResponse { Success = true, Message = "Store Manager updated successfully." };
+            return ActionResponse.Failure(string.Join(", ", result.Errors.Select(e => e.Description)));
         }
 
-        return new ActionResponse
+        return ActionResponse.Successful("Store Manager updated successfully.");
+    }
+
+    private async Task<bool> WarehouseAlreadyHasManagerAsync(int warehouseId, string? excludeUserId)
+    {
+        var managerRoleId = await _db.Roles
+            .Where(r => r.Name == StoreManagerRole)
+            .Select(r => r.Id)
+            .FirstOrDefaultAsync();
+
+        if (string.IsNullOrEmpty(managerRoleId)) return false;
+
+        var query = from u in _db.Users
+                    join ur in _db.UserRoles on u.Id equals ur.UserId
+                    where u.WarehouseId == warehouseId && ur.RoleId == managerRoleId
+                    select u.Id;
+
+        if (!string.IsNullOrEmpty(excludeUserId))
         {
-            Success = false,
-            Message = string.Join(", ", result.Errors.Select(e => e.Description))
-        };
+            query = query.Where(id => id != excludeUserId);
+        }
+
+        return await query.AnyAsync();
     }
 }

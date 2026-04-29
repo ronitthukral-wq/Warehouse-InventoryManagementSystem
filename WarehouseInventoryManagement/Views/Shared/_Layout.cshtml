@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿﻿
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -22,6 +23,8 @@
                         }
                         @if (User.IsInRole("StoreManager"))
                         {
+                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Inventory" asp-action="AddStock">Add Stock</a></li>
+                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Inventory" asp-action="RequestTransfer">Request Transfer</a></li>
                             <li class="nav-item"><a class="nav-link text-dark" asp-controller="Inventory" asp-action="PendingTransfers">Transfers</a></li>
                             <li class="nav-item"><a class="nav-link text-dark" asp-controller="Inventory" asp-action="History">History</a></li>
                         }
