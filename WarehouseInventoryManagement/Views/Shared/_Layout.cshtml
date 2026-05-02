@@ -20,9 +20,11 @@
                         {
                             <li class="nav-item"><a class="nav-link text-dark" asp-controller="Warehouse" asp-action="Index">Warehouses</a></li>
                             <li class="nav-item"><a class="nav-link text-dark" asp-controller="Product" asp-action="Index">Products</a></li>
+                            <li class="nav-item"><a class="nav-link text-danger" asp-controller="Product" asp-action="LowStockAlerts">Low Stock</a></li>
                         }
                         @if (User.IsInRole("StoreManager"))
                         {
+                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Inventory" asp-action="MyInventory">My Inventory</a></li>
                             <li class="nav-item"><a class="nav-link text-dark" asp-controller="Inventory" asp-action="AddStock">Add Stock</a></li>
                             <li class="nav-item"><a class="nav-link text-dark" asp-controller="Inventory" asp-action="RequestTransfer">Request Transfer</a></li>
                             <li class="nav-item"><a class="nav-link text-dark" asp-controller="Inventory" asp-action="PendingTransfers">Transfers</a></li>

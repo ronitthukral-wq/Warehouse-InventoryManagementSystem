@@ -1,7 +1,6 @@
 ﻿using Inventory.Contracts.Requests.Products;
 using Inventory.Contracts.Responses;
 using Inventory.Data.Context;
-using Inventory.ServiceLogic.Exceptions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,16 +14,26 @@ public class DeleteProductHandler : IRequestHandler<DeleteProductRequest, Action
 
     public async Task<ActionResponse> Handle(DeleteProductRequest request, CancellationToken cancellationToken)
     {
-        var product = await _context.Products.FindAsync(request.Id);
-        if (product == null) return new ActionResponse { Success = false, Message = "Product not found." };
+        var product = await _context.Products.FindAsync(new object?[] { request.Id }, cancellationToken);
+        if (product == null)
+        {
+            return ActionResponse.Failure("Product not found.");
+        }
 
-        // Logic check: ERD rule - cannot delete if stock exists
-        var hasStock = await _context.Stocks.AnyAsync(s => s.ProductId == request.Id && s.Quantity > 0);
-        if (hasStock) throw new ProductHasStockException("Cannot delete product with existing stock.");
+        // ERD rule: cannot delete a product that still has stock anywhere.
+        // Returning a friendly ActionResponse keeps the response shape consistent
+        // with every other handler.
+        var hasStock = await _context.Stocks
+            .AnyAsync(s => s.ProductId == request.Id && s.Quantity > 0, cancellationToken);
+        if (hasStock)
+        {
+            return ActionResponse.Failure(
+                "This product still has stock in one or more warehouses. Please clear all stock before deleting.");
+        }
 
         _context.Products.Remove(product);
         await _context.SaveChangesAsync(cancellationToken);
 
-        return new ActionResponse { Success = true, Message = "Product deleted." };
+        return ActionResponse.Successful("Product deleted.");
     }
 }

@@ -29,11 +29,17 @@ public class CreateTransferHandler : IRequestHandler<CreateTransferRequest, Acti
         var actor = await _currentUser.GetAsync(cancellationToken);
         if (!actor.IsStoreManager || actor.WarehouseId is null)
         {
-            return ActionResponse.Failure("Only Store Managers assigned to a warehouse can create transfers.");
+            return ActionResponse.Failure("Only Store Managers assigned to a warehouse can request transfers.");
         }
-        var fromWarehouseId = actor.WarehouseId.Value;
 
-        if (request.ToWarehouseId == fromWarehouseId)
+        // NEW SEMANTICS:
+        //   - The requesting Store Manager is the DESTINATION (they want stock IN).
+        //   - request.FromWarehouseId is the SOURCE (the warehouse being asked to give stock).
+        //   - The Store Manager of the SOURCE warehouse is the one who must approve.
+        var toWarehouseId = actor.WarehouseId.Value;
+        var fromWarehouseId = request.FromWarehouseId;
+
+        if (fromWarehouseId == toWarehouseId)
         {
             return ActionResponse.Failure("Source and destination warehouse cannot be the same.");
         }
@@ -45,13 +51,15 @@ public class CreateTransferHandler : IRequestHandler<CreateTransferRequest, Acti
             return ActionResponse.Failure("Selected product does not exist.");
         }
 
-        var destinationExists = await _context.Warehouses
-            .AnyAsync(w => w.Id == request.ToWarehouseId, cancellationToken);
-        if (!destinationExists)
+        var sourceExists = await _context.Warehouses
+            .AnyAsync(w => w.Id == fromWarehouseId, cancellationToken);
+        if (!sourceExists)
         {
-            return ActionResponse.Failure("Destination warehouse does not exist.");
+            return ActionResponse.Failure("Source warehouse does not exist.");
         }
 
+        // Pre-flight check: tell the requester upfront if the source clearly cannot
+        // fulfil this. The acceptance handler also re-validates at acceptance time.
         var sourceStock = await _context.Stocks
             .FirstOrDefaultAsync(s => s.ProductId == request.ProductId && s.WarehouseId == fromWarehouseId, cancellationToken);
 
@@ -59,14 +67,14 @@ public class CreateTransferHandler : IRequestHandler<CreateTransferRequest, Acti
         if (available < request.Quantity)
         {
             return ActionResponse.Failure(
-                $"Insufficient stock. You currently have {available} units of '{product.Name}'.");
+                $"Source warehouse only has {available} units of '{product.Name}' available.");
         }
 
         var transfer = new TransferRequest
         {
             ProductId = request.ProductId,
             FromWarehouseId = fromWarehouseId,
-            ToWarehouseId = request.ToWarehouseId,
+            ToWarehouseId = toWarehouseId,
             Quantity = request.Quantity,
             Status = TransferStatus.Pending,
             CreatedBy = actor.UserName
@@ -75,6 +83,6 @@ public class CreateTransferHandler : IRequestHandler<CreateTransferRequest, Acti
         _context.TransferRequests.Add(transfer);
         await _context.SaveChangesAsync(cancellationToken);
 
-        return ActionResponse.Successful("Transfer request sent and is pending approval.");
+        return ActionResponse.Successful("Transfer request sent and is pending approval by the source warehouse manager.");
     }
 }

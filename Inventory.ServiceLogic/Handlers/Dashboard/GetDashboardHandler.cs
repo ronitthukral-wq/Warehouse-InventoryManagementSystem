@@ -50,7 +50,9 @@ public class GetDashboardHandler : IRequestHandler<GetDashboardRequest, Dashboar
 
             response.LowStockAlertsCount = await _context.Stocks
                 .Include(s => s.Product)
-                .Where(s => s.WarehouseId == wid && s.Quantity <= s.Product.LowStockThreshold)
+                .Where(s => s.WarehouseId == wid
+                         && s.Product.LowStockThreshold > 0
+                         && s.Quantity <= s.Product.LowStockThreshold)
                 .CountAsync(cancellationToken);
 
             // Pending = anything still awaiting their action OR their outgoing requests still pending
@@ -85,7 +87,8 @@ public class GetDashboardHandler : IRequestHandler<GetDashboardRequest, Dashboar
 
             response.LowStockAlertsCount = await _context.Stocks
                 .Include(s => s.Product)
-                .Where(s => s.Quantity <= s.Product.LowStockThreshold)
+                .Where(s => s.Product.LowStockThreshold > 0
+                         && s.Quantity <= s.Product.LowStockThreshold)
                 .CountAsync(cancellationToken);
 
             response.PendingTransfersCount = await _context.TransferRequests

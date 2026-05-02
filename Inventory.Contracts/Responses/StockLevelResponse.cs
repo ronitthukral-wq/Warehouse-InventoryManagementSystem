@@ -11,6 +11,10 @@ public class StockLevelResponse
     public int Quantity { get; set; }
     public int LowStockThreshold { get; set; }
 
-    // Helper property to highlight rows in the UI
-    public bool IsLowStock => Quantity <= LowStockThreshold;
+    // Alert when:
+    //   • A threshold has been configured (> 0), AND
+    //   • Quantity has fallen at or below it (including 0 after a transfer fully drained the warehouse).
+    // Products that were NEVER stocked in a warehouse have no Stock row at all, so they
+    // never reach this property — no false-positive risk.
+    public bool IsLowStock => LowStockThreshold > 0 && Quantity <= LowStockThreshold;
 }

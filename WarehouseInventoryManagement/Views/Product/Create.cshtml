@@ -2,49 +2,136 @@
 @{
     ViewData["Title"] = "Create Product";
 }
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card shadow">
-            <div class="card-header bg-dark text-white">
-                <h4 class="mb-0">New Product Definition</h4>
-            </div>
-            <div class="card-body">
-                <form asp-action="Create" method="post">
-                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label asp-for="Name" class="form-label">Product Name</label>
-                            <input asp-for="Name" class="form-control" />
-                            <span asp-validation-for="Name" class="text-danger"></span>
-                        </div>
-                        <div class="col-md-6">
-                            <label asp-for="SKU" class="form-label">SKU / Barcode</label>
-                            <input asp-for="SKU" class="form-control" />
-                            <span asp-validation-for="SKU" class="text-danger"></span>
-                        </div>
-                    </div>
 
-                    <div class="row mb-3">
-                        @* Removed Price field to align with CreateProductRequest class definition *@
-                        <div class="col-md-12">
-                            <label asp-for="LowStockThreshold" class="form-label">Alert Threshold</label>
-                            <input asp-for="LowStockThreshold" type="number" class="form-control" />
-                            <span asp-validation-for="LowStockThreshold" class="text-danger"></span>
-                        </div>
-                    </div>
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    body, .form-root { font-family: 'Plus Jakarta Sans', sans-serif; }
 
-                    <div class="mb-4">
-                        <label asp-for="Description" class="form-label">Description</label>
-                        <textarea asp-for="Description" class="form-control" rows="3"></textarea>
-                    </div>
+    .form-root { background: #f0f2f7; min-height: 100vh; padding: 2rem 1.5rem; }
 
-                    <div class="d-flex justify-content-end gap-2">
-                        <a asp-action="Index" class="btn btn-secondary">Back to List</a>
-                        <button type="submit" class="btn btn-success">Save Product</button>
+    .page-hero {
+        background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #1a56a0 100%);
+        border-radius: 20px; padding: 2rem 2.5rem; margin-bottom: 2rem;
+        display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    }
+    .page-hero-text h1 { color: #fff; font-size: 1.6rem; font-weight: 800; margin: 0 0 .3rem; }
+    .page-hero-text p  { color: rgba(255,255,255,.55); font-size: .875rem; margin: 0; }
+
+    .page-hero-icon {
+        width: 72px; height: 72px;
+        background: rgba(255,255,255,.1); border: 1.5px solid rgba(255,255,255,.15);
+        border-radius: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .page-hero-icon svg { width: 36px; height: 36px; }
+
+    .form-card { background: #fff; border-radius: 20px; box-shadow: 0 2px 12px rgba(0,0,0,.07); max-width: 720px; margin: 0 auto; overflow: hidden; }
+    .form-card-header { padding: 1.5rem 2rem; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: .75rem; }
+    .form-card-header svg { width: 22px; height: 22px; flex-shrink: 0; }
+    .form-card-header h2 { font-size: 1rem; font-weight: 700; color: #0f172a; margin: 0; }
+    .form-card-body { padding: 2rem; }
+
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem; }
+    @@media (max-width: 576px) { .field-row { grid-template-columns: 1fr; } }
+
+    .field-wrap { margin-bottom: 1.25rem; }
+    .field-label { font-size: .75rem; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: #64748b; margin-bottom: .45rem; display: block; }
+
+    .field-input, .field-textarea {
+        width: 100%; padding: .72rem 1rem; border: 1.5px solid #e2e8f0; border-radius: 12px;
+        font-size: .9rem; font-family: inherit; color: #0f172a; background: #f8fafc;
+        transition: border-color .15s, box-shadow .15s; outline: none; box-sizing: border-box;
+    }
+    .field-input:focus, .field-textarea:focus {
+        border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,.12); background: #fff;
+    }
+    .field-textarea { resize: vertical; min-height: 90px; }
+    .field-error { color: #ef4444; font-size: .76rem; margin-top: .3rem; display: block; }
+
+    .validation-summary-errors {
+        background: #fff1f2; border-left: 3px solid #ef4444; border-radius: 10px;
+        padding: .75rem 1rem; color: #991b1b; font-size: .82rem; margin-bottom: 1.25rem;
+    }
+
+    .form-actions { display: flex; justify-content: flex-end; gap: .6rem; margin-top: 2rem; }
+
+    .btn-submit {
+        padding: .75rem 1.75rem; background: #16a34a; color: #fff; border: none;
+        border-radius: 14px; font-size: .9rem; font-weight: 700; font-family: inherit;
+        cursor: pointer; transition: all .15s; display: inline-flex; align-items: center; gap: .5rem;
+    }
+    .btn-submit:hover { filter: brightness(1.08); transform: translateY(-1px); }
+
+    .btn-cancel {
+        padding: .75rem 1.5rem; background: transparent; color: #64748b; border: 1.5px solid #e2e8f0;
+        border-radius: 14px; font-size: .875rem; font-weight: 600; font-family: inherit;
+        cursor: pointer; text-decoration: none; transition: all .15s; display: inline-flex; align-items: center;
+    }
+    .btn-cancel:hover { background: #f8fafc; color: #0f172a; text-decoration: none; }
+</style>
+
+<div class="form-root">
+    <div class="page-hero">
+        <div class="page-hero-text">
+            <h1>New Product Definition</h1>
+            <p>Add a new SKU to the global product catalog</p>
+        </div>
+        <div class="page-hero-icon">
+            <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M18 3 L33 11 L33 25 L18 33 L3 25 L3 11 Z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/>
+                <path d="M3 11 L18 19 L33 11" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+                <line x1="18" y1="19" x2="18" y2="33" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+                <line x1="18" y1="11" x2="18" y2="17" stroke="rgba(255,255,255,.5)" stroke-width="1.6" stroke-linecap="round"/>
+                <line x1="15" y1="14" x2="21" y2="14" stroke="rgba(255,255,255,.5)" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+        </div>
+    </div>
+
+    <div class="form-card">
+        <div class="form-card-header">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" stroke="#16a34a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96" stroke="#16a34a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <line x1="12" y1="22.08" x2="12" y2="12" stroke="#16a34a" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+            <h2>Product Details</h2>
+        </div>
+
+        <div class="form-card-body">
+            <form asp-action="Create" method="post">
+                <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+
+                <div class="field-row">
+                    <div>
+                        <label asp-for="Name" class="field-label">Product Name</label>
+                        <input asp-for="Name" class="field-input" placeholder="e.g. Wireless Keyboard" />
+                        <span asp-validation-for="Name" class="field-error"></span>
                     </div>
-                </form>
-            </div>
+                    <div>
+                        <label asp-for="SKU" class="field-label">SKU / Barcode</label>
+                        <input asp-for="SKU" class="field-input" placeholder="e.g. WK-2024-BLK" />
+                        <span asp-validation-for="SKU" class="field-error"></span>
+                    </div>
+                </div>
+
+                <div class="field-wrap">
+                    <label asp-for="LowStockThreshold" class="field-label">Alert Threshold</label>
+                    <input asp-for="LowStockThreshold" type="number" class="field-input" placeholder="e.g. 10" />
+                    <span asp-validation-for="LowStockThreshold" class="field-error"></span>
+                </div>
+
+                <div class="field-wrap">
+                    <label asp-for="Description" class="field-label">Description <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#94a3b8">(optional)</span></label>
+                    <textarea asp-for="Description" class="field-textarea" rows="3" placeholder="Brief description of this product..."></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <a asp-action="Index" class="btn-cancel">Back to List</a>
+                    <button type="submit" class="btn-submit">
+                        <svg viewBox="0 0 16 16" width="14" height="14" fill="none"><path d="M2 8l4 4 8-8" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        Save Product
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

@@ -1,0 +1,203 @@
+﻿@using Inventory.Contracts.Responses
+@model List<StockLevelResponse>
+@{
+    ViewData["Title"] = "Low Stock Alerts";
+    var grouped = Model.GroupBy(x => x.WarehouseName).OrderBy(g => g.Key);
+}
+
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    body, .page-root { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+    .page-root { background: #f0f2f7; min-height: 100vh; padding: 2rem 1.5rem; }
+
+    .page-hero {
+        background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #1a56a0 100%);
+        border-radius: 20px; padding: 2rem 2.5rem; margin-bottom: 2rem;
+        display: flex; align-items: center; justify-content: space-between;
+        flex-wrap: wrap; gap: 1rem;
+    }
+    .page-hero-text h1 { color: #fff; font-size: 1.6rem; font-weight: 800; margin: 0 0 .3rem; }
+    .page-hero-text p  { color: rgba(255,255,255,.55); font-size: .875rem; margin: 0; }
+
+    .btn-hero-ghost {
+        padding: .55rem 1.2rem; border-radius: 12px; font-weight: 600; font-size: .85rem;
+        background: rgba(255,255,255,.15); color: #fff; border: 1px solid rgba(255,255,255,.25);
+        text-decoration: none; display: inline-flex; align-items: center; gap: .4rem; transition: transform .15s;
+    }
+    .btn-hero-ghost:hover { transform: translateY(-2px); text-decoration: none; color: #fff; }
+
+    .all-clear {
+        background: #f0fdf4; border-left: 4px solid #22c55e; border-radius: 14px;
+        padding: 1.5rem 1.75rem; display: flex; align-items: center; gap: 1rem;
+    }
+    .all-clear svg { width: 32px; height: 32px; flex-shrink: 0; }
+    .all-clear h3 { font-size: 1rem; font-weight: 700; color: #166534; margin: 0 0 .2rem; }
+    .all-clear p  { font-size: .85rem; color: #166534; margin: 0; opacity: .8; }
+
+    .summary-strip { display: flex; gap: .75rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+
+    .summary-chip {
+        background: #fff; border-radius: 12px; padding: .6rem 1.1rem;
+        font-size: .8rem; font-weight: 600; display: flex; align-items: center;
+        gap: .4rem; box-shadow: 0 1px 6px rgba(0,0,0,.05);
+    }
+    .chip-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .chip-out   .chip-dot { background: #ef4444; } .chip-out   { color: #991b1b; }
+    .chip-low   .chip-dot { background: #f59e0b; } .chip-low   { color: #92400e; }
+    .chip-total .chip-dot { background: #3b82f6; } .chip-total { color: #1e40af; }
+
+    .wh-panel { background: #fff; border-radius: 20px; box-shadow: 0 2px 12px rgba(0,0,0,.06); overflow: hidden; margin-bottom: 1.5rem; }
+
+    .wh-header {
+        padding: 1.1rem 1.75rem; border-bottom: 1px solid #f1f5f9;
+        display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .5rem;
+        background: linear-gradient(90deg, #fffbeb, #fff);
+    }
+    .wh-name { font-size: .95rem; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: .5rem; }
+    .wh-name svg { width: 18px; height: 18px; }
+    .wh-chips { display: flex; gap: .4rem; }
+
+    .chip-sm {
+        border-radius: 7px; padding: .2rem .6rem; font-size: .68rem;
+        font-weight: 700; text-transform: uppercase; letter-spacing: .4px;
+    }
+    .chip-out-sm  { background: #fee2e2; color: #991b1b; }
+    .chip-warn-sm { background: #fef3c7; color: #92400e; }
+    .chip-grey-sm { background: #f1f5f9; color: #475569; }
+
+    .alert-table { width: 100%; border-collapse: collapse; }
+    .alert-table thead th {
+        padding: .7rem 1.75rem; font-size: .7rem; font-weight: 700; letter-spacing: .6px;
+        text-transform: uppercase; color: #94a3b8; background: #f8fafc; border-bottom: 1px solid #f1f5f9;
+    }
+    .alert-table tbody td {
+        padding: .85rem 1.75rem; font-size: .875rem; color: #334155;
+        border-bottom: 1px solid #f8fafc; vertical-align: middle;
+    }
+    .alert-table tbody tr:last-child td { border-bottom: none; }
+    .alert-table tbody tr.row-out  td { background: #fff1f2; }
+    .alert-table tbody tr.row-warn td { background: #fffbeb; }
+
+    .badge-sku {
+        background: #f1f5f9; color: #64748b; border-radius: 6px;
+        padding: .18rem .5rem; font-size: .72rem; font-weight: 600; font-family: 'Courier New', monospace;
+    }
+    .shortage-badge { border-radius: 7px; padding: .2rem .55rem; font-size: .7rem; font-weight: 700; }
+    .sb-out  { background: #fee2e2; color: #991b1b; }
+    .sb-warn { background: #fef3c7; color: #92400e; }
+    .status-badge { border-radius: 8px; padding: .22rem .6rem; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; }
+    .st-out  { background: #fee2e2; color: #991b1b; }
+    .st-low  { background: #fef3c7; color: #92400e; }
+</style>
+
+<div class="page-root">
+    <div class="page-hero">
+        <div class="page-hero-text">
+            <h1>Low Stock Alerts</h1>
+            <p>Products at or below their alert threshold, grouped by warehouse</p>
+        </div>
+        <a asp-controller="Dashboard" asp-action="Index" class="btn-hero-ghost">
+            <svg viewBox="0 0 16 16" width="13" height="13" fill="none"><path d="M10 3L5 8l5 5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Back to Dashboard
+        </a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="all-clear">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" stroke="#22c55e" stroke-width="1.8"/>
+                <path d="M8 12l3 3 5-5" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <div>
+                <h3>All Clear!</h3>
+                <p>No products are currently at or below their stock alert thresholds.</p>
+            </div>
+        </div>
+    }
+    else
+    {
+        int outOfStockCount = Model.Count(i => i.Quantity == 0);
+        int lowCount        = Model.Count(i => i.Quantity > 0);
+
+        <div class="summary-strip">
+            <div class="summary-chip chip-total">
+                <span class="chip-dot"></span> @Model.Count total alert(s) across @grouped.Count() warehouse(s)
+            </div>
+            @if (outOfStockCount > 0)
+            {
+                <div class="summary-chip chip-out">
+                    <span class="chip-dot"></span> @outOfStockCount out of stock
+                </div>
+            }
+            @if (lowCount > 0)
+            {
+                <div class="summary-chip chip-low">
+                    <span class="chip-dot"></span> @lowCount running low
+                </div>
+            }
+        </div>
+
+        @foreach (var warehouseGroup in grouped)
+        {
+            int whOut = warehouseGroup.Count(i => i.Quantity == 0);
+
+            <div class="wh-panel">
+                <div class="wh-header">
+                    <div class="wh-name">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="#d97706" stroke-width="1.8" stroke-linejoin="round"/>
+                            <rect x="9" y="14" width="6" height="8" rx="1" stroke="#d97706" stroke-width="1.8"/>
+                        </svg>
+                        @warehouseGroup.Key
+                    </div>
+                    <div class="wh-chips">
+                        @if (whOut > 0)
+                        {
+                            <span class="chip-sm chip-out-sm">@whOut out of stock</span>
+                        }
+                        <span class="chip-sm chip-grey-sm">@warehouseGroup.Count() item(s)</span>
+                    </div>
+                </div>
+
+                <table class="alert-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>SKU</th>
+                            <th style="text-align:right">Current Stock</th>
+                            <th style="text-align:right">Alert Threshold</th>
+                            <th style="text-align:right">Shortage</th>
+                            <th style="text-align:center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in warehouseGroup.OrderBy(i => i.Quantity))
+                        {
+                            int shortage     = item.LowStockThreshold - item.Quantity;
+                            bool isOut       = item.Quantity == 0;
+                            string rowClass  = isOut ? "row-out" : "row-warn";
+                            string sbClass   = isOut ? "sb-out" : "sb-warn";
+                            string stClass   = isOut ? "st-out" : "st-low";
+                            string stLabel   = isOut ? "Out of Stock" : "Running Low";
+
+                            <tr class="@rowClass">
+                                <td><strong style="color:#0f172a">@item.ProductName</strong></td>
+                                <td><span class="badge-sku">@item.SKU</span></td>
+                                <td style="text-align:right;font-weight:700;color:@(isOut?"#ef4444":"#d97706")">@item.Quantity</td>
+                                <td style="text-align:right;color:#94a3b8">@item.LowStockThreshold</td>
+                                <td style="text-align:right">
+                                    <span class="shortage-badge @sbClass">-@shortage</span>
+                                </td>
+                                <td style="text-align:center">
+                                    <span class="status-badge @stClass">@stLabel</span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
+</div>

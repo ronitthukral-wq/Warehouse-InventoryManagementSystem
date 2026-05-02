@@ -1,39 +1,291 @@
-﻿@model AddStockRequest
+﻿@model Inventory.Contracts.Requests.Inventory.AddStockRequest
 @{
     ViewData["Title"] = "Add Stock";
 }
 
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card shadow">
-            <div class="card-header bg-primary text-white">
-                <h4 class="mb-0">Add Stock to Warehouse</h4>
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+    body, .form-root {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .form-root {
+        background: #f0f2f7;
+        min-height: 100vh;
+        padding: 2rem 1.5rem;
+    }
+
+    .page-hero {
+        background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #1a56a0 100%);
+        border-radius: 20px;
+        padding: 2rem 2.5rem;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    .page-hero-text h1 {
+        color: #fff;
+        font-size: 1.6rem;
+        font-weight: 800;
+        margin: 0 0 .3rem;
+    }
+
+    .page-hero-text p {
+        color: rgba(255,255,255,.55);
+        font-size: .875rem;
+        margin: 0;
+    }
+
+    .page-hero-icon {
+        width: 72px;
+        height: 72px;
+        background: rgba(255,255,255,.1);
+        border: 1.5px solid rgba(255,255,255,.15);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+        .page-hero-icon svg {
+            width: 36px;
+            height: 36px;
+        }
+
+    .form-card {
+        background: #fff;
+        border-radius: 20px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.07);
+        max-width: 600px;
+        margin: 0 auto;
+        overflow: hidden;
+    }
+
+    .form-card-header {
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid #f1f5f9;
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+    }
+
+        .form-card-header svg {
+            width: 22px;
+            height: 22px;
+            flex-shrink: 0;
+        }
+
+        .form-card-header h2 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0;
+        }
+
+    .form-card-body {
+        padding: 2rem;
+    }
+
+    .form-info-box {
+        background: #eff6ff;
+        border-left: 3px solid #3b82f6;
+        border-radius: 10px;
+        padding: .85rem 1rem;
+        font-size: .82rem;
+        color: #1e40af;
+        margin-bottom: 1.75rem;
+        display: flex;
+        align-items: flex-start;
+        gap: .5rem;
+    }
+
+        .form-info-box svg {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+    .field-wrap {
+        margin-bottom: 1.25rem;
+    }
+
+    .field-label {
+        font-size: .75rem;
+        font-weight: 700;
+        letter-spacing: .5px;
+        text-transform: uppercase;
+        color: #64748b;
+        margin-bottom: .45rem;
+        display: block;
+    }
+
+    .field-input,
+    .field-select {
+        width: 100%;
+        padding: .72rem 1rem;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: .9rem;
+        font-family: inherit;
+        color: #0f172a;
+        background: #f8fafc;
+        transition: border-color .15s, box-shadow .15s;
+        outline: none;
+        box-sizing: border-box;
+        appearance: none;
+    }
+
+        .field-input:focus, .field-select:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,.12);
+            background: #fff;
+        }
+
+    .field-error {
+        color: #ef4444;
+        font-size: .76rem;
+        margin-top: .3rem;
+        display: block;
+    }
+
+    .validation-summary-errors {
+        background: #fff1f2;
+        border-left: 3px solid #ef4444;
+        border-radius: 10px;
+        padding: .75rem 1rem;
+        color: #991b1b;
+        font-size: .82rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .form-actions {
+        display: grid;
+        gap: .6rem;
+        margin-top: 2rem;
+    }
+
+    .btn-submit {
+        padding: .8rem 1rem;
+        background: #16a34a;
+        color: #fff;
+        border: none;
+        border-radius: 14px;
+        font-size: .9rem;
+        font-weight: 700;
+        font-family: inherit;
+        cursor: pointer;
+        transition: transform .15s, filter .15s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
+    }
+
+        .btn-submit:hover {
+            filter: brightness(1.08);
+            transform: translateY(-1px);
+        }
+
+    .btn-cancel {
+        padding: .75rem 1rem;
+        background: transparent;
+        color: #64748b;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 14px;
+        font-size: .875rem;
+        font-weight: 600;
+        font-family: inherit;
+        cursor: pointer;
+        text-align: center;
+        text-decoration: none;
+        transition: all .15s;
+        display: block;
+    }
+
+        .btn-cancel:hover {
+            background: #f8fafc;
+            color: #0f172a;
+            text-decoration: none;
+        }
+</style>
+
+<div class="form-root">
+    <div class="page-hero">
+        <div class="page-hero-text">
+            <h1>Add Stock</h1>
+            <p>Receive new inventory into your warehouse</p>
+        </div>
+        <div class="page-hero-icon">
+            <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M18 4 L32 11 L32 25 L18 32 L4 25 L4 11 Z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round" />
+                <path d="M4 11 L18 18 L32 11" stroke="#fff" stroke-width="1.8" stroke-linecap="round" />
+                <line x1="18" y1="18" x2="18" y2="32" stroke="#fff" stroke-width="1.8" stroke-linecap="round" />
+                <line x1="18" y1="10" x2="18" y2="16" stroke="rgba(255,255,255,.6)" stroke-width="1.6" stroke-linecap="round" />
+                <line x1="15" y1="13" x2="21" y2="13" stroke="rgba(255,255,255,.6)" stroke-width="1.6" stroke-linecap="round" />
+            </svg>
+        </div>
+    </div>
+
+    <div class="form-card">
+        <div class="form-card-header">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" stroke="#16a34a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96" stroke="#16a34a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                <line x1="12" y1="22.08" x2="12" y2="12" stroke="#16a34a" stroke-width="1.8" stroke-linecap="round" />
+            </svg>
+            <h2>Stock Addition Form</h2>
+        </div>
+
+        <div class="form-card-body">
+            <div class="form-info-box">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="10" stroke="#3b82f6" stroke-width="1.8" />
+                    <line x1="12" y1="8" x2="12" y2="12" stroke="#3b82f6" stroke-width="1.8" stroke-linecap="round" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" stroke="#3b82f6" stroke-width="2.2" stroke-linecap="round" />
+                </svg>
+                <span>Select a product from the catalog and enter the quantity you are receiving into your warehouse.</span>
             </div>
-            <div class="card-body">
-                <form asp-action="AddStock" method="post">
-                    @Html.AntiForgeryToken()
-                    
-                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-                    <div class="form-group mb-3">
-                        <label asp-for="ProductId" class="form-label font-weight-bold">Product ID</label>
-                        <input asp-for="ProductId" class="form-control" placeholder="Enter Product ID" />
-                        <span asp-validation-for="ProductId" class="text-danger"></span>
-                        <small class="form-text text-muted">Enter the unique ID of the product being added.</small>
-                    </div>
+            <form asp-action="AddStock" method="post">
+                @Html.AntiForgeryToken()
 
-                    <div class="form-group mb-4">
-                        <label asp-for="Quantity" class="form-label font-weight-bold">Quantity</label>
-                        <input asp-for="Quantity" type="number" class="form-control" placeholder="0" />
-                        <span asp-validation-for="Quantity" class="text-danger"></span>
-                    </div>
+                <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
 
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-success">Confirm Addition</button>
-                        <a asp-controller="Dashboard" asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
-                    </div>
-                </form>
-            </div>
+                <div class="field-wrap">
+                    <label asp-for="ProductId" class="field-label">Product</label>
+                    <select asp-for="ProductId" asp-items="ViewBag.Products as Microsoft.AspNetCore.Mvc.Rendering.SelectList" class="field-select">
+                        <option value="">— Select a product —</option>
+                    </select>
+                    <span asp-validation-for="ProductId" class="field-error"></span>
+                </div>
+
+                <div class="field-wrap">
+                    <label asp-for="Quantity" class="field-label">Quantity</label>
+                    <input asp-for="Quantity" type="number" min="1" class="field-input" placeholder="0" />
+                    <span asp-validation-for="Quantity" class="field-error"></span>
+                </div>
+
+                <div class="field-wrap">
+                    <label asp-for="Note" class="field-label">Note <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#94a3b8">(optional)</span></label>
+                    <input asp-for="Note" class="field-input" placeholder="e.g. Purchase order #1234" />
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-submit">
+                        <svg viewBox="0 0 16 16" width="15" height="15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M8 1v14M1 8h14" stroke="#fff" stroke-width="2.2" stroke-linecap="round" />
+                        </svg>
+                        Confirm Addition
+                    </button>
+                    <a asp-controller="Dashboard" asp-action="Index" class="btn-cancel">Cancel</a>
+                </div>
+            </form>
         </div>
     </div>
 </div>

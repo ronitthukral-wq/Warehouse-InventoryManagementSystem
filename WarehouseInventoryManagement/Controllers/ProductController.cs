@@ -1,4 +1,5 @@
 ﻿using Inventory.Contracts.Requests.Products;
+using Inventory.Contracts.Requests.Reports;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -27,7 +28,6 @@ public class ProductController : BaseController
 
         if (response.Success)
         {
-            // Use TempData to trigger the alert we added to the Dashboard
             TempData["SuccessMessage"] = response.Message;
             return RedirectToAction("Index", "Dashboard");
         }
@@ -35,9 +35,56 @@ public class ProductController : BaseController
         ModelState.AddModelError("", response.Message);
         return View(request);
     }
+
     public async Task<IActionResult> Details(int id)
     {
         var product = await Mediator.Send(new GetProductByIdRequest { Id = id });
         return View(product);
+    }
+
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Edit(int id)
+    {
+        var product = await Mediator.Send(new GetProductByIdRequest { Id = id });
+        if (product is null || product.Id == 0)
+            return NotFound();
+
+        var model = new UpdateProductRequest
+        {
+            Id = product.Id,
+            Name = product.Name,
+            SKU = product.SKU,
+            Description = product.Description,
+            LowStockThreshold = product.LowStockThreshold
+        };
+
+        return View(model);
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Admin")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(UpdateProductRequest request)
+    {
+        if (!ModelState.IsValid) return View(request);
+
+        var response = await Mediator.Send(request);
+        if (response.Success)
+        {
+            TempData["SuccessMessage"] = response.Message;
+            return RedirectToAction(nameof(Index));
+        }
+
+        ModelState.AddModelError("", response.Message);
+        return View(request);
+    }
+
+    // GET: /Product/LowStockAlerts  — Admin only
+    // Shows every product that is running low on stock, grouped by warehouse.
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> LowStockAlerts()
+    {
+        var items = await Mediator.Send(new GetLowStockReportRequest());
+        return View(items);
     }
 }

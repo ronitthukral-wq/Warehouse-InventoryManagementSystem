@@ -59,8 +59,13 @@ public class GetPendingTransfersHandler : IRequestHandler<GetPendingTransfersReq
 
             if (actor.IsStoreManager && actor.WarehouseId is int wid)
             {
+                // Direction = what's happening to MY stock when accepted:
+                //   - I'm the destination (ToWarehouseId == me) → stock comes IN
+                //   - I'm the source      (FromWarehouseId == me) → stock goes OUT
                 dto.Direction = entity.ToWarehouseId == wid ? "Incoming" : "Outgoing";
-                dto.IsActionable = entity.Status == TransferStatus.Pending && entity.ToWarehouseId == wid;
+
+                // The SOURCE manager is the approver under the new request semantics.
+                dto.IsActionable = entity.Status == TransferStatus.Pending && entity.FromWarehouseId == wid;
             }
             else
             {

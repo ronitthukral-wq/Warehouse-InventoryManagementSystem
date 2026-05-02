@@ -3,26 +3,126 @@
     ViewData["Title"] = "Product Details";
 }
 
-<div class="container">
-    <h2>Product Details: @Model.Name</h2>
-    <hr />
-    <dl class="row">
-        <dt class="col-sm-3">SKU</dt>
-        <dd class="col-sm-9">@Model.SKU</dd>
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    body, .page-root { font-family: 'Plus Jakarta Sans', sans-serif; }
 
-        <dt class="col-sm-3">Description</dt>
-        <dd class="col-sm-9">@Model.Description</dd>
+    .page-root { background: #f0f2f7; min-height: 100vh; padding: 2rem 1.5rem; }
 
-        @* REMOVED: Price section to resolve CS1061 error *@
+    .page-hero {
+        background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #1a56a0 100%);
+        border-radius: 20px; padding: 2rem 2.5rem; margin-bottom: 2rem;
+        display: flex; align-items: center; justify-content: space-between;
+        flex-wrap: wrap; gap: 1rem;
+    }
+    .page-hero-text h1 { color: #fff; font-size: 1.6rem; font-weight: 800; margin: 0 0 .3rem; }
+    .page-hero-text p  { color: rgba(255,255,255,.55); font-size: .875rem; margin: 0; }
 
-        <dt class="col-sm-3">Alert Threshold</dt>
-        <dd class="col-sm-9">@Model.LowStockThreshold</dd>
+    .hero-actions { display: flex; gap: .6rem; }
+    .btn-hero-ghost {
+        padding: .55rem 1.2rem; border-radius: 12px; font-weight: 600; font-size: .85rem;
+        background: rgba(255,255,255,.15); color: #fff; border: 1px solid rgba(255,255,255,.25);
+        text-decoration: none; display: inline-flex; align-items: center; gap: .4rem; transition: transform .15s;
+    }
+    .btn-hero-ghost:hover { transform: translateY(-2px); text-decoration: none; color: #fff; }
+    .btn-hero-amber {
+        padding: .55rem 1.2rem; border-radius: 12px; font-weight: 600; font-size: .85rem;
+        background: #fbbf24; color: #0f172a; border: none;
+        text-decoration: none; display: inline-flex; align-items: center; gap: .4rem; transition: transform .15s;
+    }
+    .btn-hero-amber:hover { transform: translateY(-2px); text-decoration: none; color: #0f172a; filter: brightness(1.05); }
 
-        <dt class="col-sm-3">Total Stock Available</dt>
-        <dd class="col-sm-9">@Model.TotalAvailableQuantity</dd>
-    </dl>
-    <div>
-        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
-        <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+    .detail-card { background: #fff; border-radius: 20px; box-shadow: 0 2px 12px rgba(0,0,0,.06); max-width: 700px; margin: 0 auto; overflow: hidden; }
+
+    .detail-card-header { padding: 1.5rem 2rem; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: .75rem; }
+    .detail-card-header svg { width: 22px; height: 22px; }
+    .detail-card-header h2 { font-size: 1rem; font-weight: 700; color: #0f172a; margin: 0; }
+
+    .detail-body { padding: 0; }
+
+    .detail-row {
+        display: flex; padding: 1.1rem 2rem; border-bottom: 1px solid #f8fafc; align-items: flex-start; gap: 1rem;
+    }
+    .detail-row:last-child { border-bottom: none; }
+
+    .detail-label { font-size: .72rem; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: #94a3b8; min-width: 160px; padding-top: .15rem; flex-shrink: 0; }
+    .detail-value { font-size: .9rem; color: #0f172a; font-weight: 500; flex: 1; }
+
+    .sku-code {
+        background: #f1f5f9; color: #334155; border-radius: 8px;
+        padding: .3rem .7rem; font-family: 'Courier New', monospace; font-size: .85rem; font-weight: 600;
+    }
+
+    .stock-value { font-size: 1.6rem; font-weight: 800; color: #0f172a; line-height: 1; }
+    .stock-sub { font-size: .78rem; color: #94a3b8; margin-top: .2rem; }
+
+    .detail-footer { padding: 1.25rem 2rem; border-top: 1px solid #f1f5f9; background: #f8fafc; }
+</style>
+
+<div class="page-root">
+    <div class="page-hero">
+        <div class="page-hero-text">
+            <h1>Product Details</h1>
+            <p>@Model.Name &mdash; <span style="font-family:'Courier New',monospace;font-size:.85rem;opacity:.7">@Model.SKU</span></p>
+        </div>
+        <div class="hero-actions">
+            @if (User.IsInRole("Admin"))
+            {
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn-hero-amber">
+                    <svg viewBox="0 0 16 16" width="13" height="13" fill="none"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#0f172a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Edit Product
+                </a>
+                <a asp-action="Index" class="btn-hero-ghost">
+                    <svg viewBox="0 0 16 16" width="13" height="13" fill="none"><path d="M10 3L5 8l5 5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Back to List
+                </a>
+            }
+            else
+            {
+                <a asp-controller="Inventory" asp-action="MyInventory" class="btn-hero-ghost">
+                    <svg viewBox="0 0 16 16" width="13" height="13" fill="none"><path d="M10 3L5 8l5 5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Back to Inventory
+                </a>
+            }
+        </div>
+    </div>
+
+    <div class="detail-card">
+        <div class="detail-card-header">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" stroke="#3b82f6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96" stroke="#3b82f6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <line x1="12" y1="22.08" x2="12" y2="12" stroke="#3b82f6" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+            <h2>Product Information</h2>
+        </div>
+
+        <div class="detail-body">
+            <div class="detail-row">
+                <div class="detail-label">Product Name</div>
+                <div class="detail-value"><strong>@Model.Name</strong></div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">SKU / Barcode</div>
+                <div class="detail-value"><span class="sku-code">@Model.SKU</span></div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Description</div>
+                <div class="detail-value" style="color:@(string.IsNullOrWhiteSpace(Model.Description)?"#94a3b8":"#0f172a")">
+                    @(string.IsNullOrWhiteSpace(Model.Description) ? "No description provided." : Model.Description)
+                </div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Alert Threshold</div>
+                <div class="detail-value">@Model.LowStockThreshold <span style="font-size:.8rem;color:#94a3b8">units</span></div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Total Stock</div>
+                <div class="detail-value">
+                    <div class="stock-value">@Model.TotalAvailableQuantity</div>
+                    <div class="stock-sub">units across all warehouses</div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

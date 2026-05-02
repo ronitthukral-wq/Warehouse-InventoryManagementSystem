@@ -41,10 +41,11 @@ public class RespondToTransferHandler : IRequestHandler<RespondToTransferRequest
             return ActionResponse.Failure("Transfer request has already been processed.");
         }
 
-        // Only the receiving warehouse's manager can approve / reject
-        if (transfer.ToWarehouseId != actor.WarehouseId.Value)
+        // Only the SOURCE warehouse's manager can approve / reject — they're the
+        // one being asked to give up their stock. The requester is the destination.
+        if (transfer.FromWarehouseId != actor.WarehouseId.Value)
         {
-            return ActionResponse.Failure("You can only respond to transfers addressed to your warehouse.");
+            return ActionResponse.Failure("You can only respond to transfer requests pulling stock FROM your warehouse.");
         }
 
         if (!request.Accept)

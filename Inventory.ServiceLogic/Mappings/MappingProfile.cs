@@ -11,7 +11,6 @@ public class MappingProfile : Profile
         CreateMap<Product, ProductResponse>();
         CreateMap<Warehouse, WarehouseResponse>();
 
-        // Stock -> StockLevelResponse (used for "My Inventory" view + per-warehouse listings)
         CreateMap<Stock, StockLevelResponse>()
             .ForMember(d => d.Id, o => o.Ignore())
             .ForMember(d => d.ProductName, o => o.MapFrom(s => s.Product.Name))
@@ -19,7 +18,6 @@ public class MappingProfile : Profile
             .ForMember(d => d.WarehouseName, o => o.MapFrom(s => s.Warehouse.Name))
             .ForMember(d => d.LowStockThreshold, o => o.MapFrom(s => s.Product.LowStockThreshold));
 
-        // StockMovement -> MovementHistoryResponse (audit log)
         CreateMap<StockMovement, MovementHistoryResponse>()
             .ForMember(d => d.ProductName, o => o.MapFrom(s => s.Product.Name))
             .ForMember(d => d.WarehouseName, o => o.MapFrom(s => s.Warehouse.Name))
@@ -27,7 +25,6 @@ public class MappingProfile : Profile
             .ForMember(d => d.Timestamp, o => o.MapFrom(s => s.CreatedDate))
             .ForMember(d => d.PerformedBy, o => o.MapFrom(s => s.CreatedBy ?? string.Empty));
 
-        // TransferRequest -> TransferRequestResponse (Direction + IsActionable filled by handler)
         CreateMap<TransferRequest, TransferRequestResponse>()
             .ForMember(d => d.Product, o => o.MapFrom(s => s.Product.Name))
             .ForMember(d => d.FromWarehouseName, o => o.MapFrom(s => s.FromWarehouse.Name))
@@ -36,7 +33,6 @@ public class MappingProfile : Profile
             .ForMember(d => d.Direction, o => o.Ignore())
             .ForMember(d => d.IsActionable, o => o.Ignore());
 
-        // ApplicationUser -> UserResponse (Role filled by handler via UserManager)
         CreateMap<ApplicationUser, UserResponse>()
             .ForMember(d => d.AssignedWarehouseName,
                 opt => opt.MapFrom(src => src.Warehouse != null ? src.Warehouse.Name : null))
