@@ -224,13 +224,7 @@
         </a>
     </div>
 
-    @if (TempData["Success"] != null)
-    {
-        <div class="toast-success" id="toast-s">
-            <span>✓ &nbsp;@TempData["Success"]</span>
-            <button class="toast-close" onclick="document.getElementById('toast-s').remove()">✕</button>
-        </div>
-    }
+    @await Component.InvokeAsync("AlertToast")
 
     @if (!Model.Any())
     {

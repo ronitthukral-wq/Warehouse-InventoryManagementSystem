@@ -1,5 +1,4 @@
-﻿﻿
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -7,41 +6,136 @@
     <title>@ViewData["Title"] - Warehouse Management</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" />
+    <style>
+        /* ── Topbar ── */
+        .navbar { height: 60px; padding: 0 1rem; }
+        .navbar-brand { font-weight: 800; font-size: 1.05rem; color: #0f172a !important; letter-spacing: -.3px; }
+        .navbar .nav-link { font-size: .875rem; font-weight: 600; color: #475569 !important; border-radius: 8px; padding: .4rem .75rem !important; transition: background .15s, color .15s; }
+        .navbar .nav-link:hover { background: #f1f5f9; color: #0f172a !important; }
+        .navbar .nav-link.text-danger { color: #dc2626 !important; }
+        .navbar .nav-link.text-danger:hover { background: #fff1f2; }
+
+        /* ── Hamburger toggler ── */
+        .navbar-toggler { border: none; padding: .4rem; border-radius: 10px; }
+        .navbar-toggler:focus { box-shadow: none; background: #f1f5f9; }
+        .navbar-toggler-icon { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%230f172a' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e"); }
+
+        /* ── Offcanvas drawer (mobile) ── */
+        .offcanvas { width: 270px !important; }
+        .offcanvas-header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #1a56a0 100%);
+            padding: 1.25rem 1.25rem 1rem;
+        }
+        .offcanvas-title { color: #fff; font-weight: 800; font-size: 1.05rem; }
+        .offcanvas-header .btn-close { filter: invert(1); opacity: .7; }
+        .offcanvas-body { padding: .75rem; background: #fff; }
+
+        .drawer-section { font-size: .65rem; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: #94a3b8; padding: .6rem .5rem .3rem; }
+        .drawer-link { display: flex; align-items: center; gap: .6rem; padding: .65rem .85rem; border-radius: 12px; font-size: .875rem; font-weight: 600; color: #334155; text-decoration: none; margin-bottom: .1rem; transition: background .15s, color .15s; }
+        .drawer-link:hover { background: #f1f5f9; color: #0f172a; text-decoration: none; }
+        .drawer-link.danger { color: #dc2626; }
+        .drawer-link.danger:hover { background: #fff1f2; }
+        .drawer-footer-area { border-top: 1px solid #f1f5f9; padding: .75rem; margin-top: auto; }
+        .drawer-logout { display: flex; align-items: center; justify-content: center; gap: .5rem; width: 100%; padding: .65rem; border: none; background: #fff1f2; color: #dc2626; border-radius: 12px; font-size: .875rem; font-weight: 700; cursor: pointer; font-family: inherit; }
+        .drawer-logout:hover { background: #fee2e2; }
+    </style>
 </head>
 <body>
+
+    @* ── MOBILE OFFCANVAS DRAWER ───────────────────────────── *@
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileDrawer" aria-labelledby="mobileDrawerLabel">
+        <div class="offcanvas-header">
+            <span class="offcanvas-title" id="mobileDrawerLabel">IMS</span>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body d-flex flex-column" style="height:100%;">
+            <div class="flex-grow-1">
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <div class="drawer-section">Overview</div>
+                    <a asp-controller="Dashboard" asp-action="Index" class="drawer-link" data-bs-dismiss="offcanvas">Dashboard</a>
+                }
+                @if (User.IsInRole("Admin"))
+                {
+                    <div class="drawer-section">Administration</div>
+                    <a asp-controller="Warehouse" asp-action="Index" class="drawer-link" data-bs-dismiss="offcanvas">Warehouses</a>
+                    <a asp-controller="Product" asp-action="Index" class="drawer-link" data-bs-dismiss="offcanvas">Products</a>
+                    <a asp-controller="Product" asp-action="LowStockAlerts" class="drawer-link danger" data-bs-dismiss="offcanvas">Low Stock Alerts</a>
+                    <a asp-controller="User" asp-action="Index" class="drawer-link" data-bs-dismiss="offcanvas">Store Managers</a>
+                }
+                @if (User.IsInRole("StoreManager"))
+                {
+                    <div class="drawer-section">Inventory</div>
+                    <a asp-controller="Inventory" asp-action="MyInventory" class="drawer-link" data-bs-dismiss="offcanvas">My Inventory</a>
+                    <a asp-controller="Inventory" asp-action="AddStock" class="drawer-link" data-bs-dismiss="offcanvas">Add Stock</a>
+                    <a asp-controller="Inventory" asp-action="RequestTransfer" class="drawer-link" data-bs-dismiss="offcanvas">Request Transfer</a>
+                    <a asp-controller="Inventory" asp-action="PendingTransfers" class="drawer-link" data-bs-dismiss="offcanvas">Transfers</a>
+                    <a asp-controller="Inventory" asp-action="History" class="drawer-link" data-bs-dismiss="offcanvas">History</a>
+                }
+                @if (User.Identity?.IsAuthenticated != true)
+                {
+                    <a asp-controller="Account" asp-action="Login" class="drawer-link" data-bs-dismiss="offcanvas">Login</a>
+                }
+            </div>
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <div class="drawer-footer-area">
+                    <form asp-controller="Account" asp-action="Logout" method="post">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="drawer-logout">Logout</button>
+                    </form>
+                </div>
+            }
+        </div>
+    </div>
+
+    @* ── TOPBAR ─────────────────────────────────────────────── *@
     <header>
-        <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-md navbar-light bg-white border-bottom shadow-sm mb-3">
             <div class="container">
-                <a class="navbar-brand" asp-area="" asp-controller="Dashboard" asp-action="Index">IMS</a>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+
+                @* Hamburger — visible only on mobile *@
+                <button class="navbar-toggler me-2 d-md-none" type="button"
+                        data-bs-toggle="offcanvas" data-bs-target="#mobileDrawer" aria-controls="mobileDrawer">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <a class="navbar-brand" asp-controller="Dashboard" asp-action="Index">IMS</a>
+
+                @* Desktop nav — hidden on mobile, shown on md+ *@
+                <div class="collapse navbar-collapse">
                     <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item"><a class="nav-link text-dark" asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
                         @if (User.IsInRole("Admin"))
                         {
-                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Warehouse" asp-action="Index">Warehouses</a></li>
-                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Product" asp-action="Index">Products</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Warehouse" asp-action="Index">Warehouses</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Product" asp-action="Index">Products</a></li>
                             <li class="nav-item"><a class="nav-link text-danger" asp-controller="Product" asp-action="LowStockAlerts">Low Stock</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="User" asp-action="Index">Managers</a></li>
                         }
                         @if (User.IsInRole("StoreManager"))
                         {
-                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Inventory" asp-action="MyInventory">My Inventory</a></li>
-                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Inventory" asp-action="AddStock">Add Stock</a></li>
-                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Inventory" asp-action="RequestTransfer">Request Transfer</a></li>
-                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Inventory" asp-action="PendingTransfers">Transfers</a></li>
-                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Inventory" asp-action="History">History</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Inventory" asp-action="MyInventory">My Inventory</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Inventory" asp-action="AddStock">Add Stock</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Inventory" asp-action="RequestTransfer">Request Transfer</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Inventory" asp-action="PendingTransfers">Transfers</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Inventory" asp-action="History">History</a></li>
                         }
                     </ul>
                     <partial name="_LoginPartial" />
                 </div>
+
             </div>
         </nav>
     </header>
+
     <div class="container">
         <main role="main" class="pb-3">
-            
             @RenderBody()
         </main>
     </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

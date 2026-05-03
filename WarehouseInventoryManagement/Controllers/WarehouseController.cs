@@ -1,4 +1,6 @@
-﻿using Inventory.Contracts.Requests.Warehouses;
+﻿using Inventory.Contracts.Requests.Inventory;
+using Inventory.Contracts.Requests.Warehouses;
+using Inventory.Contracts.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,6 +15,16 @@ public class WarehouseController : BaseController
         return View(warehouses);
     }
 
+    public async Task<IActionResult> Details(int id)
+    {
+        var warehouse = await Mediator.Send(new GetWarehouseByIdRequest { Id = id });
+        if (warehouse == null) return NotFound();
+
+        var stock = await Mediator.Send(new GetStockByWarehouseRequest { WarehouseId = id });
+
+        return View((warehouse, stock));
+    }
+
     public IActionResult Create() => View();
 
     [HttpPost]
@@ -25,8 +37,8 @@ public class WarehouseController : BaseController
 
         if (response.Success)
         {
-            TempData["SuccessMessage"] = response.Message;
-            return RedirectToAction("Index", "Dashboard");
+            TempData["Success"] = response.Message;
+            return RedirectToAction(nameof(Index));
         }
 
         ModelState.AddModelError("", response.Message);
@@ -58,7 +70,7 @@ public class WarehouseController : BaseController
 
         if (response.Success)
         {
-            TempData["SuccessMessage"] = response.Message;
+            TempData["Success"] = response.Message;
             return RedirectToAction(nameof(Index));
         }
 

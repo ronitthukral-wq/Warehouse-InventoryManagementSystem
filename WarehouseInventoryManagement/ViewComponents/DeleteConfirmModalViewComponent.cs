@@ -8,8 +8,8 @@ public class DeleteConfirmModalViewComponent : ViewComponent
         string modalId,
         string formId,
         string title,
-        string entityLabel,
-        string nameElementId)
+        string nameElementId,
+        string? entityLabel = null)
     {
         ViewBag.ModalId = modalId;
         ViewBag.FormId = formId;
