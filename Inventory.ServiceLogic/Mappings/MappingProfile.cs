@@ -34,8 +34,10 @@ public class MappingProfile : Profile
             .ForMember(d => d.IsActionable, o => o.Ignore());
 
         CreateMap<ApplicationUser, UserResponse>()
-            .ForMember(d => d.AssignedWarehouseName,
-                opt => opt.MapFrom(src => src.Warehouse != null ? src.Warehouse.Name : null))
-            .ForMember(d => d.Role, opt => opt.Ignore());
+    .ForMember(d => d.AssignedWarehouseName,
+        opt => opt.MapFrom(src => src.Warehouse != null ? src.Warehouse.Name : null))
+    .ForMember(d => d.WarehouseId,
+        opt => opt.MapFrom(src => src.WarehouseId))          // ← ADD THIS
+    .ForMember(d => d.Role, opt => opt.Ignore());
     }
 }

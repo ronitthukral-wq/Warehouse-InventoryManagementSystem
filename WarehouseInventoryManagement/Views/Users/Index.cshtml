@@ -7,17 +7,6 @@
     @@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
     body, .dashboard-root { font-family: 'Plus Jakarta Sans', sans-serif; }
     .dashboard-root { background: #f0f2f7; min-height: 100vh; padding: 2rem 1.5rem; }
-    .summary-chip { background: #fff; border-radius: 12px; padding: .7rem 1.1rem; font-size: .82rem; font-weight: 700; display: flex; align-items: center; gap: .5rem; box-shadow: 0 10px 28px rgba(15, 23, 42, .08); border: 1px solid rgba(148,163,184,.15); }
-    .chip-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-    .chip-healthy { background: #f0fdf4; color: #166534; }
-    .chip-out { background: #fff1f2; color: #b91c1c; }
-    .chip-healthy .chip-dot { background: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,.12); }
-    .chip-out .chip-dot { background: #dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,.12); }
-    .hero-banner { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #1a56a0 100%); border-radius: 24px; padding: 2.5rem; margin-bottom: 2rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-    .hero-text h1 { color: #fff; font-size: 2rem; font-weight: 800; margin: 0 0 .35rem; }
-    .hero-text p { color: rgba(255,255,255,.6); margin: 0; font-size: .95rem; }
-    .btn-hero { padding: .6rem 1.4rem; border-radius: 12px; font-weight: 600; font-size: .875rem; text-decoration: none; display: inline-flex; align-items: center; gap: .4rem; transition: transform .15s; background: #fff; color: #0f172a; box-shadow: 0 4px 16px rgba(0,0,0,.2); }
-    .btn-hero:hover { transform: translateY(-2px); text-decoration: none; color: #0f172a; }
     .panel { background: #fff; border-radius: 20px; box-shadow: 0 2px 12px rgba(0,0,0,.06); overflow: hidden; }
     .panel-header { padding: 1.25rem 1.75rem; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between; }
     .panel-title { font-size: .95rem; font-weight: 700; color: #0f172a; margin: 0; }
@@ -29,89 +18,20 @@
     .badge-role { background: #dbeafe; color: #1e40af; border-radius: 999px; padding: .2rem .6rem; font-size: .72rem; font-weight: 700; text-transform: uppercase; }
     .action-link { display: inline-flex; align-items: center; gap: .3rem; font-size: .78rem; font-weight: 600; border-radius: 8px; padding: .28rem .7rem; text-decoration: none; transition: all .12s; border: none; cursor: pointer; }
     .action-link:hover { transform: translateY(-1px); text-decoration: none; }
-    .al-edit { background: #fef3c7; color: #92400e; } .al-delete { background: #fee2e2; color: #991b1b; }
-
-    #delete-user-modal {
-        display: none;
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 100vw !important;
-        height: 100vh !important;
-        background: rgba(15, 23, 42, 0.85) !important;
-        z-index: 999999 !important;
-        align-items: center !important;
-        justify-content: center !important;
-        padding: 1rem;
-    }
-    #delete-user-modal.show {
-        display: flex !important;
-    }
-    #delete-user-modal .modal-card {
-        width: 100%;
-        max-width: 440px;
-        background: #ffffff !important;
-        border-radius: 20px;
-        box-shadow: 0 28px 90px rgba(0, 0, 0, 0.5);
-        overflow: hidden;
-    }
-    #delete-user-modal .modal-head {
-        padding: 1.25rem 1.5rem;
-        background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
-        color: #fff;
-    }
-    #delete-user-modal .modal-head h3 { margin: 0; font-size: 1rem; font-weight: 800; }
-    #delete-user-modal .modal-body {
-        padding: 1.25rem 1.5rem;
-        color: #334155;
-        font-size: .9rem;
-        line-height: 1.6;
-        background: #fff !important;
-    }
-    #delete-user-modal .modal-actions {
-        display: flex;
-        gap: .75rem;
-        justify-content: flex-end;
-        padding: 0 1.5rem 1.5rem;
-        background: #fff !important;
-    }
-    #delete-user-modal .modal-btn {
-        border: none;
-        border-radius: 12px;
-        padding: .65rem 1.25rem;
-        font-size: .875rem;
-        font-weight: 700;
-        cursor: pointer;
-        font-family: inherit;
-        transition: all .15s;
-    }
-    #delete-user-modal .modal-btn-cancel { background: #f1f5f9; color: #0f172a; }
-    #delete-user-modal .modal-btn-cancel:hover { background: #e2e8f0; }
-    #delete-user-modal .modal-btn-danger { background: #ef4444; color: #fff; box-shadow: 0 4px 12px rgba(239,68,68,.4); }
-    #delete-user-modal .modal-btn-danger:hover { background: #dc2626; }
+    .al-edit   { background: #fef3c7; color: #92400e; }
+    .al-delete { background: #fee2e2; color: #991b1b; }
 </style>
 
 <div class="dashboard-root">
-    @if (TempData["Success"] != null)
-    {
-        <div class="summary-chip chip-healthy" style="margin-bottom:1rem;">
-            <span class="chip-dot"></span>@TempData["Success"]
-        </div>
-    }
-    @if (TempData["Error"] != null)
-    {
-        <div class="summary-chip chip-out" style="margin-bottom:1rem;">
-            <span class="chip-dot"></span>@TempData["Error"]
-        </div>
-    }
 
-    <div class="hero-banner">
-        <div class="hero-text">
-            <h1>Store Managers</h1>
-            <p>Manage store manager accounts and warehouse assignments</p>
-        </div>
-        <a asp-action="Create" class="btn-hero">New Manager</a>
-    </div>
+    @await Component.InvokeAsync("AlertToast")
+
+    @await Component.InvokeAsync("HeroBanner", new {
+        title = "Store Managers",
+        subtitle = "Manage store manager accounts and warehouse assignments",
+        primaryButtonText = "New Manager",
+        primaryButtonUrl = Url.Action("Create", "User")
+    })
 
     <div class="panel">
         <div class="panel-header">
@@ -137,7 +57,10 @@
                             <td><span class="badge-role">@item.Role</span></td>
                             <td>
                                 <a asp-action="Edit" asp-route-id="@item.Id" class="action-link al-edit">Edit</a>
-                                <button type="button" class="action-link al-delete" onclick="confirmDeleteUser('@item.Id', '@item.Email')">Delete</button>
+                                <button type="button" class="action-link al-delete"
+                                        onclick="openDeleteModal('delete-user-modal','delete-user-id','delete-user-email','@item.Id','@item.Email')">
+                                    Delete
+                                </button>
                             </td>
                         </tr>
                     }
@@ -152,32 +75,18 @@
     <input type="hidden" name="id" id="delete-user-id" />
 </form>
 
-<div id="delete-user-modal" onclick="if(event.target===this) closeDeleteUserModal()">
-    <div class="modal-card">
-        <div class="modal-head"><h3>🗑️ Delete store manager</h3></div>
-        <div class="modal-body">Delete <strong id="delete-user-email"></strong>? This action cannot be undone.</div>
-        <div class="modal-actions">
-            <button type="button" class="modal-btn modal-btn-cancel" onclick="closeDeleteUserModal()">Cancel</button>
-            <button type="button" class="modal-btn modal-btn-danger" onclick="document.getElementById('delete-user-form').submit()">Delete</button>
-        </div>
-    </div>
-</div>
+@await Component.InvokeAsync("DeleteConfirmModal", new {
+    modalId       = "delete-user-modal",
+    formId        = "delete-user-form",
+    title         = "Delete store manager",
+    nameElementId = "delete-user-email"
+})
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var modal = document.getElementById('delete-user-modal');
-        document.body.appendChild(modal);
-    });
-
-    function confirmDeleteUser(id, email) {
-        document.getElementById('delete-user-id').value = id;
-        document.getElementById('delete-user-email').textContent = email;
-        document.getElementById('delete-user-modal').classList.add('show');
+    function openDeleteModal(modalId, inputId, nameId, id, name) {
+        document.getElementById(inputId).value = id;
+        document.getElementById(nameId).textContent = name;
+        document.getElementById(modalId).classList.add('show');
         document.body.style.overflow = 'hidden';
-    }
-
-    function closeDeleteUserModal() {
-        document.getElementById('delete-user-modal').classList.remove('show');
-        document.body.style.overflow = '';
     }
 </script>

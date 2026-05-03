@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Inventory.Models.Entities;
+using Inventory.ServiceLogic.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,6 +26,7 @@ public static class DependencyInjection
         // Required by ICurrentUserContext (and any handler that needs request context)
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUserContext, CurrentUserContext>();
+        services.AddScoped<IWarehouseManagerGuard, WarehouseManagerGuard>();
 
         return services;
     }

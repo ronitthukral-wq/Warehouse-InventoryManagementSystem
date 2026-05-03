@@ -1,0 +1,96 @@
+﻿<div id="@ViewBag.ModalId" class="del-modal-wrap" onclick="if(event.target===this){this.classList.remove('show');document.body.style.overflow='';}">
+    <div class="del-modal-card">
+        <div class="del-modal-head">
+            <h3>🗑️ @ViewBag.Title</h3>
+        </div>
+        <div class="del-modal-body">
+            Delete <strong id="@ViewBag.NameElementId"></strong>? This action cannot be undone.
+        </div>
+        <div class="del-modal-actions">
+            <button type="button" class="del-modal-btn del-btn-cancel"
+                    onclick="document.getElementById('@ViewBag.ModalId').classList.remove('show');document.body.style.overflow='';">
+                Cancel
+            </button>
+            <button type="button" class="del-modal-btn del-btn-danger"
+                    onclick="document.getElementById('@ViewBag.FormId').submit()">
+                Delete
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .del-modal-wrap {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(15, 23, 42, 0.85);
+        z-index: 999999;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+    }
+    .del-modal-wrap.show {
+        display: flex !important;
+    }
+    .del-modal-card {
+        width: 100%;
+        max-width: 440px;
+        background: #ffffff;
+        border-radius: 20px;
+        box-shadow: 0 28px 90px rgba(0, 0, 0, 0.5);
+        overflow: hidden;
+    }
+    .del-modal-head {
+        padding: 1.25rem 1.5rem;
+        background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+        color: #fff;
+    }
+    .del-modal-head h3 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 800;
+    }
+    .del-modal-body {
+        padding: 1.25rem 1.5rem;
+        color: #334155;
+        font-size: .9rem;
+        line-height: 1.6;
+        background: #fff;
+    }
+    .del-modal-actions {
+        display: flex;
+        gap: .75rem;
+        justify-content: flex-end;
+        padding: 0 1.5rem 1.5rem;
+        background: #fff;
+    }
+    .del-modal-btn {
+        border: none;
+        border-radius: 12px;
+        padding: .65rem 1.25rem;
+        font-size: .875rem;
+        font-weight: 700;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all .15s;
+    }
+    .del-btn-cancel { background: #f1f5f9; color: #0f172a; }
+    .del-btn-cancel:hover { background: #e2e8f0; }
+    .del-btn-danger { background: #ef4444; color: #fff; box-shadow: 0 4px 12px rgba(239,68,68,.4); }
+    .del-btn-danger:hover { background: #dc2626; }
+</style>
+
+<script>
+    (function () {
+        var modal = document.getElementById('@ViewBag.ModalId');
+        if (modal && modal.parentElement !== document.body) {
+            document.body.appendChild(modal);
+        }
+    })();
+</script>

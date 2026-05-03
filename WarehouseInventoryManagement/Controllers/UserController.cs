@@ -1,6 +1,5 @@
 ﻿using Inventory.Contracts.Requests.Users;
 using Inventory.Contracts.Requests.Warehouses;
-using Inventory.Contracts.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -22,8 +21,7 @@ public class UserController : BaseController
         return View();
     }
 
-    [HttpPost]
-    [ValidateAntiForgeryToken]
+    [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(CreateStoreManagerRequest request)
     {
         if (!ModelState.IsValid)
@@ -33,7 +31,6 @@ public class UserController : BaseController
         }
 
         var response = await Mediator.Send(request);
-
         if (response.Success)
         {
             TempData["Success"] = response.Message;
@@ -56,15 +53,14 @@ public class UserController : BaseController
         {
             Id = user.Id,
             Email = user.Email,
-            WarehouseId = await ResolveWarehouseIdAsync(user.AssignedWarehouseName)
+            WarehouseId = user.WarehouseId   // ← directly from response now, no name lookup
         };
 
         await PopulateWarehousesAsync(model.WarehouseId);
         return View(model);
     }
 
-    [HttpPost]
-    [ValidateAntiForgeryToken]
+    [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(UpdateStoreManagerRequest request)
     {
         if (!ModelState.IsValid)
@@ -74,7 +70,6 @@ public class UserController : BaseController
         }
 
         var response = await Mediator.Send(request);
-
         if (response.Success)
         {
             TempData["Success"] = response.Message;
@@ -86,8 +81,7 @@ public class UserController : BaseController
         return View(request);
     }
 
-    [HttpPost]
-    [ValidateAntiForgeryToken]
+    [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(string id)
     {
         var response = await Mediator.Send(new DeleteStoreManagerRequest { Id = id });
@@ -99,13 +93,5 @@ public class UserController : BaseController
     {
         var warehouses = await Mediator.Send(new GetAllWarehousesRequest());
         ViewBag.Warehouses = new SelectList(warehouses, "Id", "Name", selectedId);
-    }
-
-    private async Task<int?> ResolveWarehouseIdAsync(string? name)
-    {
-        if (string.IsNullOrWhiteSpace(name)) return null;
-        var warehouses = await Mediator.Send(new GetAllWarehousesRequest());
-        return warehouses.FirstOrDefault(w =>
-            string.Equals(w.Name, name, StringComparison.OrdinalIgnoreCase))?.Id;
     }
 }

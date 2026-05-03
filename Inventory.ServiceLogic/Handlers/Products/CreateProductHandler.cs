@@ -20,56 +20,35 @@ public class CreateProductHandler : IRequestHandler<CreateProductRequest, Action
 
     public async Task<ActionResponse> Handle(CreateProductRequest request, CancellationToken cancellationToken)
     {
-        try
+        var skuTaken = await _context.Products
+            .AnyAsync(p => p.SKU == request.SKU, cancellationToken);
+        if (skuTaken)
+            return ActionResponse.Failure($"A product with SKU '{request.SKU}' already exists.");
+
+        var actor = await _currentUser.GetAsync(cancellationToken);
+
+        var product = new Product
         {
-            // SKU uniqueness guard (the DB has a unique index, but a friendly message is nicer)
-            var skuTaken = await _context.Products
-                .AnyAsync(p => p.SKU == request.SKU, cancellationToken);
-            if (skuTaken)
-            {
-                return ActionResponse.Failure($"A product with SKU '{request.SKU}' already exists.");
-            }
+            Name = request.Name,
+            SKU = request.SKU,
+            Description = request.Description,
+            LowStockThreshold = request.LowStockThreshold,
+            CreatedBy = actor.UserName
+        };
 
-            var actor = await _currentUser.GetAsync(cancellationToken);
+        _context.Products.Add(product);
+        await _context.SaveChangesAsync(cancellationToken);
 
-            var product = new Product
-            {
-                Name = request.Name,
-                SKU = request.SKU,
-                Description = request.Description,
-                LowStockThreshold = request.LowStockThreshold,
-                CreatedBy = actor.UserName
-            };
+        var warehouseIds = await _context.Warehouses
+            .Select(w => w.Id)
+            .ToListAsync(cancellationToken);
 
-            _context.Products.Add(product);
+        foreach (var wid in warehouseIds)
+            _context.Stocks.Add(new Stock { ProductId = product.Id, WarehouseId = wid, Quantity = 0 });
+
+        if (warehouseIds.Count > 0)
             await _context.SaveChangesAsync(cancellationToken);
 
-            // Initialise the product to qty 0 in EVERY warehouse so each Store Manager
-            // immediately sees the new SKU and can stock it.
-            var warehouseIds = await _context.Warehouses
-                .Select(w => w.Id)
-                .ToListAsync(cancellationToken);
-
-            foreach (var warehouseId in warehouseIds)
-            {
-                _context.Stocks.Add(new Stock
-                {
-                    ProductId = product.Id,
-                    WarehouseId = warehouseId,
-                    Quantity = 0
-                });
-            }
-
-            if (warehouseIds.Count > 0)
-            {
-                await _context.SaveChangesAsync(cancellationToken);
-            }
-
-            return ActionResponse.Successful($"Product '{product.Name}' added to the catalog.");
-        }
-        catch (Exception ex)
-        {
-            return ActionResponse.Failure($"Error: {ex.Message}");
-        }
+        return ActionResponse.Successful($"Product '{product.Name}' added to the catalog.");
     }
 }

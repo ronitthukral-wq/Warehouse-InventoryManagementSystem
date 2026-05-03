@@ -13,40 +13,32 @@ public class GetAllUsersHandler : IRequestHandler<GetAllUsersRequest, List<UserR
 {
     private readonly InventoryDbContext _db;
     private readonly IMapper _mapper;
-    private readonly UserManager<ApplicationUser> _userManager;
 
-    public GetAllUsersHandler(
-        InventoryDbContext db,
-        IMapper mapper,
-        UserManager<ApplicationUser> userManager)
+    public GetAllUsersHandler(InventoryDbContext db, IMapper mapper)
     {
         _db = db;
         _mapper = mapper;
-        _userManager = userManager;
     }
 
     public async Task<List<UserResponse>> Handle(GetAllUsersRequest request, CancellationToken cancellationToken)
     {
-        // Explicitly include Warehouse to get the AssignedWarehouseName
-        var users = await _db.Users
-            .Include(u => u.Warehouse)
-            .AsNoTracking()
-            .ToListAsync(cancellationToken);
+        // Single query: join users → userRoles → roles in one shot — no N+1
+        var usersWithRoles = await (
+            from u in _db.Users.Include(u => u.Warehouse)
+            join ur in _db.UserRoles on u.Id equals ur.UserId into userRoles
+            from ur in userRoles.DefaultIfEmpty()
+            join r in _db.Roles on ur.RoleId equals r.Id into roles
+            from r in roles.DefaultIfEmpty()
+            select new UserResponse
+            {
+                Id = u.Id,
+                Email = u.Email ?? string.Empty,
+                WarehouseId = u.WarehouseId,
+                AssignedWarehouseName = u.Warehouse != null ? u.Warehouse.Name : null,
+                Role = r != null ? r.Name ?? string.Empty : string.Empty
+            }
+        ).AsNoTracking().ToListAsync(cancellationToken);
 
-        var responses = new List<UserResponse>(users.Count);
-
-        foreach (var user in users)
-        {
-            var dto = _mapper.Map<UserResponse>(user);
-
-            // Identity stores roles in AspNetUserRoles. Resolve the primary role here
-            // so the AutoMapper profile remains free of side-effects.
-            var roles = await _userManager.GetRolesAsync(user);
-            dto.Role = roles.FirstOrDefault() ?? string.Empty;
-
-            responses.Add(dto);
-        }
-
-        return responses;
+        return usersWithRoles;
     }
 }

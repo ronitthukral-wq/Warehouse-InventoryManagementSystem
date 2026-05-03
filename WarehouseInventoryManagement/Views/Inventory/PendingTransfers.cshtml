@@ -1,14 +1,15 @@
 ﻿@model IEnumerable<Inventory.Contracts.Responses.TransferRequestResponse>
 @{
     ViewData["Title"] = "Transfers";
+    var list = Model?.ToList() ?? new List<Inventory.Contracts.Responses.TransferRequestResponse>();
 }
 
 <style>
     @@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
     body, .page-root { font-family: 'Plus Jakarta Sans', sans-serif; }
-
     .page-root { background: #f0f2f7; min-height: 100vh; padding: 2rem 1.5rem; }
 
+    /* ── Hero ── */
     .page-hero {
         background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #1a56a0 100%);
         border-radius: 20px; padding: 2rem 2.5rem; margin-bottom: 2rem;
@@ -17,9 +18,7 @@
     }
     .page-hero-text h1 { color: #fff; font-size: 1.6rem; font-weight: 800; margin: 0 0 .3rem; }
     .page-hero-text p  { color: rgba(255,255,255,.55); font-size: .875rem; margin: 0; }
-
     .hero-actions { display: flex; gap: .6rem; flex-wrap: wrap; }
-
     .btn-hero {
         padding: .55rem 1.2rem; border-radius: 12px; font-weight: 600;
         font-size: .85rem; border: none; cursor: pointer; text-decoration: none;
@@ -29,30 +28,27 @@
     .btn-hero-white { background: #fff; color: #0f172a; box-shadow: 0 4px 14px rgba(0,0,0,.15); }
     .btn-hero-ghost { background: rgba(255,255,255,.15); color: #fff; border: 1px solid rgba(255,255,255,.25); }
 
-    .toast-error {
-        background: #fff1f2; border-left: 4px solid #ef4444; border-radius: 12px;
-        padding: .9rem 1.2rem; color: #991b1b; font-weight: 600; font-size: .9rem;
-        margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between;
-    }
-    .toast-close { background: none; border: none; cursor: pointer; font-size: 1.1rem; color: inherit; opacity: .6; padding: 0; }
-
+    /* ── Panel ── */
     .panel { background: #fff; border-radius: 20px; box-shadow: 0 2px 12px rgba(0,0,0,.06); overflow: hidden; }
-
     .panel-header {
         padding: 1.25rem 1.75rem; border-bottom: 1px solid #f1f5f9;
-        display: flex; align-items: center; justify-content: space-between;
+        display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .5rem;
     }
     .panel-title { font-size: .95rem; font-weight: 700; color: #0f172a; margin: 0; display: flex; align-items: center; gap: .5rem; }
     .panel-title svg { width: 20px; height: 20px; }
     .panel-count { background: #f1f5f9; color: #64748b; border-radius: 20px; padding: .2rem .7rem; font-size: .75rem; font-weight: 700; }
 
-    .tr-table { width: 100%; border-collapse: collapse; }
+    /* ── Responsive table wrapper ── */
+    .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+    .tr-table { width: 100%; border-collapse: collapse; min-width: 680px; }
     .tr-table thead th {
-        padding: .75rem 1.5rem; font-size: .7rem; font-weight: 700; letter-spacing: .6px;
-        text-transform: uppercase; color: #94a3b8; background: #f8fafc; border-bottom: 1px solid #f1f5f9; white-space: nowrap;
+        padding: .75rem 1.25rem; font-size: .7rem; font-weight: 700; letter-spacing: .6px;
+        text-transform: uppercase; color: #94a3b8; background: #f8fafc;
+        border-bottom: 1px solid #f1f5f9; white-space: nowrap;
     }
     .tr-table tbody td {
-        padding: .9rem 1.5rem; font-size: .875rem; color: #334155;
+        padding: .9rem 1.25rem; font-size: .875rem; color: #334155;
         border-bottom: 1px solid #f8fafc; vertical-align: middle;
     }
     .tr-table tbody tr:last-child td { border-bottom: none; }
@@ -60,6 +56,7 @@
 
     .ts-text { font-size: .78rem; color: #94a3b8; white-space: nowrap; }
 
+    /* ── Badges ── */
     .dir-badge, .status-badge {
         border-radius: 7px; padding: .22rem .6rem; font-size: .68rem;
         font-weight: 700; text-transform: uppercase; letter-spacing: .4px; white-space: nowrap;
@@ -71,21 +68,94 @@
     .st-rejected { background: #f1f5f9; color: #475569; }
     .st-other    { background: #f1f5f9; color: #64748b; }
 
+    /* ── Action buttons — horizontal row ── */
+    .action-group {
+        display: flex;
+        flex-direction: row;
+        gap: .4rem;
+        align-items: center;
+        justify-content: flex-end;
+        flex-wrap: nowrap;
+    }
     .action-btn {
-        padding: .3rem .8rem; border-radius: 8px; font-size: .75rem; font-weight: 700;
+        padding: .3rem .75rem; border-radius: 8px; font-size: .73rem; font-weight: 700;
         border: none; cursor: pointer; text-decoration: none; transition: all .12s;
-        display: inline-flex; align-items: center; gap: .3rem;
+        display: inline-flex; align-items: center; gap: .25rem; white-space: nowrap;
     }
     .action-btn:hover { transform: translateY(-1px); filter: brightness(1.07); }
-    .btn-accept  { background: #dcfce7; color: #166534; }
-    .btn-reject  { background: #fee2e2; color: #991b1b; }
+    .btn-accept { background: #dcfce7; color: #166534; }
+    .btn-reject { background: #fee2e2; color: #991b1b; }
 
+    /* ── Empty state ── */
     .empty-state { text-align: center; padding: 4rem 2rem; color: #94a3b8; }
     .empty-state svg { width: 64px; height: 64px; margin-bottom: 1rem; opacity: .45; }
     .empty-state p { font-size: .9rem; margin: 0; }
+
+    /* ── Mobile card layout (< 640px) ── */
+    @@media (max-width: 639px) {
+        .page-root { padding: 1.25rem 1rem; }
+        .page-hero { padding: 1.5rem 1.25rem; }
+        .page-hero-text h1 { font-size: 1.3rem; }
+        .hero-actions { width: 100%; }
+        .btn-hero { flex: 1; justify-content: center; }
+        .panel-header { padding: 1rem 1.25rem; }
+
+        /* Switch from table to stacked cards on mobile */
+        .table-scroll { overflow-x: visible; }
+        .tr-table { display: block; min-width: unset; }
+        .tr-table thead { display: none; }
+        .tr-table tbody { display: block; }
+        .tr-table tbody tr {
+            display: block;
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .tr-table tbody tr:last-child { border-bottom: none; }
+        .tr-table tbody tr:hover td { background: transparent; }
+        .tr-table tbody td {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: .3rem 0;
+            border: none;
+            font-size: .85rem;
+        }
+        .tr-table tbody td::before {
+            content: attr(data-label);
+            font-size: .68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            color: #94a3b8;
+            min-width: 90px;
+        }
+        .action-group { justify-content: flex-end; width: 100%; margin-top: .5rem; }
+    }
+
+    @@media (max-width: 400px) {
+        .action-group { flex-wrap: wrap; }
+        .action-btn { flex: 1; justify-content: center; }
+    }
 </style>
 
 <div class="page-root">
+
+    @* ── Toast notifications (both success and error) ── *@
+    @if (TempData["Success"] != null)
+    {
+        <div id="toast-s" style="background:#f0fdf4;border-left:4px solid #22c55e;border-radius:12px;padding:.9rem 1.2rem;color:#166634;font-weight:600;font-size:.9rem;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;">
+            <span>✓ &nbsp;@TempData["Success"]</span>
+            <button onclick="document.getElementById('toast-s').style.display='none'" style="background:none;border:none;cursor:pointer;font-size:1.1rem;color:inherit;opacity:.6;padding:0;">✕</button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div id="toast-e" style="background:#fff1f2;border-left:4px solid #ef4444;border-radius:12px;padding:.9rem 1.2rem;color:#991b1b;font-weight:600;font-size:.9rem;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;">
+            <span>⚠ &nbsp;@TempData["Error"]</span>
+            <button onclick="document.getElementById('toast-e').style.display='none'" style="background:none;border:none;cursor:pointer;font-size:1.1rem;color:inherit;opacity:.6;padding:0;">✕</button>
+        </div>
+    }
+
     <div class="page-hero">
         <div class="page-hero-text">
             <h1>Stock Transfers</h1>
@@ -103,14 +173,6 @@
         </div>
     </div>
 
-    @if (TempData["Error"] != null)
-    {
-        <div class="toast-error" id="toast-e">
-            <span>⚠ &nbsp;@TempData["Error"]</span>
-            <button class="toast-close" onclick="document.getElementById('toast-e').remove()">✕</button>
-        </div>
-    }
-
     <div class="panel">
         <div class="panel-header">
             <p class="panel-title">
@@ -120,41 +182,39 @@
                 </svg>
                 Transfer Requests
             </p>
-            @if (Model != null)
-            {
-                <span class="panel-count">@Model.Count() records</span>
-            }
+            <span class="panel-count">@list.Count records</span>
         </div>
 
-        <table class="tr-table">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Direction</th>
-                    <th>Product</th>
-                    <th>From</th>
-                    <th>To</th>
-                    <th style="text-align:right">Qty</th>
-                    <th>Status</th>
-                    <th style="text-align:right">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (Model == null || !Model.Any())
-                {
-                    <tr><td colspan="8">
-                        <div class="empty-state">
-                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M2 8h12M10 4l4 4-4 4" stroke="#cbd5e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M22 16H10M14 20l-4-4 4-4" stroke="#cbd5e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                            <p>No transfers involving your warehouse yet.</p>
-                        </div>
-                    </td></tr>
-                }
-                else
-                {
-                    foreach (var t in Model)
+        <div class="table-scroll">
+            <table class="tr-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Direction</th>
+                        <th>Product</th>
+                        <th>From</th>
+                        <th>To</th>
+                        <th style="text-align:right">Qty</th>
+                        <th>Status</th>
+                        <th style="text-align:right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!list.Any())
+                    {
+                        <tr>
+                            <td colspan="8">
+                                <div class="empty-state">
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M2 8h12M10 4l4 4-4 4" stroke="#cbd5e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <path d="M22 16H10M14 20l-4-4 4-4" stroke="#cbd5e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                    <p>No transfers involving your warehouse yet.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var t in list)
                     {
                         string stClass = t.Status switch {
                             "Pending"  => "st-pending",
@@ -165,28 +225,30 @@
                         string dirClass = t.Direction == "Incoming" ? "dir-in" : "dir-out";
 
                         <tr>
-                            <td><span class="ts-text">@t.CreatedDate.ToString("MMM dd, yyyy HH:mm")</span></td>
-                            <td><span class="dir-badge @dirClass">@t.Direction</span></td>
-                            <td><strong style="color:#0f172a">@t.Product</strong></td>
-                            <td style="color:#64748b;font-size:.82rem">@t.FromWarehouseName</td>
-                            <td style="color:#64748b;font-size:.82rem">@t.ToWarehouseName</td>
-                            <td style="text-align:right;font-weight:700;color:#0f172a">@t.Quantity</td>
-                            <td><span class="status-badge @stClass">@t.Status</span></td>
-                            <td style="text-align:right">
+                            <td data-label="Date"><span class="ts-text">@t.CreatedDate.ToString("MMM dd, yyyy HH:mm")</span></td>
+                            <td data-label="Direction"><span class="dir-badge @dirClass">@t.Direction</span></td>
+                            <td data-label="Product"><strong style="color:#0f172a">@t.Product</strong></td>
+                            <td data-label="From" style="color:#64748b;font-size:.82rem">@t.FromWarehouseName</td>
+                            <td data-label="To" style="color:#64748b;font-size:.82rem">@t.ToWarehouseName</td>
+                            <td data-label="Qty" style="text-align:right;font-weight:700;color:#0f172a">@t.Quantity</td>
+                            <td data-label="Status"><span class="status-badge @stClass">@t.Status</span></td>
+                            <td data-label="Actions">
                                 @if (t.IsActionable)
                                 {
-                                    <form asp-action="RespondToTransfer" method="post" style="display:inline">
-                                        @Html.AntiForgeryToken()
-                                        <input type="hidden" name="TransferRequestId" value="@t.Id" />
-                                        <input type="hidden" name="Accept" value="true" />
-                                        <button type="submit" class="action-btn btn-accept">✓ Accept</button>
-                                    </form>
-                                    <form asp-action="RespondToTransfer" method="post" style="display:inline;margin-left:.35rem">
-                                        @Html.AntiForgeryToken()
-                                        <input type="hidden" name="TransferRequestId" value="@t.Id" />
-                                        <input type="hidden" name="Accept" value="false" />
-                                        <button type="submit" class="action-btn btn-reject">✕ Reject</button>
-                                    </form>
+                                    <div class="action-group">
+                                        <form asp-action="RespondToTransfer" method="post" style="margin:0">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="TransferRequestId" value="@t.Id" />
+                                            <input type="hidden" name="Accept" value="true" />
+                                            <button type="submit" class="action-btn btn-accept">✓ Accept</button>
+                                        </form>
+                                        <form asp-action="RespondToTransfer" method="post" style="margin:0">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="TransferRequestId" value="@t.Id" />
+                                            <input type="hidden" name="Accept" value="false" />
+                                            <button type="submit" class="action-btn btn-reject">✕ Reject</button>
+                                        </form>
+                                    </div>
                                 }
                                 else
                                 {
@@ -195,8 +257,8 @@
                             </td>
                         </tr>
                     }
-                }
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>

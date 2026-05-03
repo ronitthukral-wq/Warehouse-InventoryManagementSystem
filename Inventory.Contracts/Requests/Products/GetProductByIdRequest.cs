@@ -3,7 +3,7 @@ using MediatR;
 
 namespace Inventory.Contracts.Requests.Products;
 
-public class GetProductByIdRequest : IRequest<ProductResponse>
+public class GetProductByIdRequest : IRequest<ProductResponse?>   // ← nullable
 {
     public int Id { get; set; }
 }
