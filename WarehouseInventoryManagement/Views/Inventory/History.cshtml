@@ -179,7 +179,7 @@
             <span class="panel-count">@Model.Count() records</span>
         </div>
 
-        <table class="hist-table">
+        <table class="hist-table" id="history-table">
             <thead>
                 <tr>
                     <th>Timestamp</th>
@@ -224,3 +224,18 @@
         </table>
     </div>
 </div>
+
+                        @section Scripts {
+<script>
+    $(document).ready(function () {
+        $('#history-table').DataTable({
+            pageLength: 15,
+            lengthMenu: [15, 25, 50, 100],
+            order: [[0, 'desc']],         // newest movements first
+            columnDefs: [
+                { orderable: false, targets: [4, 5] }  // Type, Performed By not sortable
+            ]
+        });
+    });
+</script>
+}

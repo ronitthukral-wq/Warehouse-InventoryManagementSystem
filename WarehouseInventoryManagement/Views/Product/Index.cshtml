@@ -60,7 +60,7 @@
             <p class="panel-title">All Products</p>
             <span class="panel-count">@total items</span>
         </div>
-        <table class="prod-table">
+        <table class="prod-table" id="products-table">
             <thead>
                 <tr>
                     <th>SKU</th>
@@ -123,3 +123,18 @@
         document.body.style.overflow = 'hidden';
     }
 </script>
+
+    @section Scripts {
+<script>
+    $(document).ready(function () {
+        $('#products-table').DataTable({
+            pageLength: 10,
+            lengthMenu: [10, 25, 50],
+            order: [[1, 'asc']],         // default sort by Name
+            columnDefs: [
+                { orderable: false, targets: 4 }  // disable sort on Actions column
+            ]
+        });
+    });
+</script>
+}

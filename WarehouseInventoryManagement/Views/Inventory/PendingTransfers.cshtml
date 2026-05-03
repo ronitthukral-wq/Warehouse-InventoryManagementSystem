@@ -186,7 +186,7 @@
         </div>
 
         <div class="table-scroll">
-            <table class="tr-table">
+            <table class="tr-table" id="transfers-table">
                 <thead>
                     <tr>
                         <th>Date</th>
@@ -262,3 +262,18 @@
         </div>
     </div>
 </div>
+
+                                        @section Scripts {
+<script>
+    $(document).ready(function () {
+        $('#transfers-table').DataTable({
+            pageLength: 10,
+            lengthMenu: [10, 25, 50],
+            order: [[0, 'desc']],         // default sort by Date, newest first
+            columnDefs: [
+                { orderable: false, targets: [1, 6, 7] }  // Direction, Status, Actions not sortable
+            ]
+        });
+    });
+</script>
+}
