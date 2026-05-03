@@ -5,156 +5,163 @@
 
 <style>
     @@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-    body, .page-root { font-family: 'Plus Jakarta Sans', sans-serif; }
+    body, .dashboard-root { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .dashboard-root { background: #f0f2f7; min-height: 100vh; padding: 2rem 1.5rem; }
+    .summary-chip { background: #fff; border-radius: 12px; padding: .7rem 1.1rem; font-size: .82rem; font-weight: 700; display: flex; align-items: center; gap: .5rem; box-shadow: 0 10px 28px rgba(15, 23, 42, .08); border: 1px solid rgba(148,163,184,.15); }
+    .chip-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .chip-healthy { background: #f0fdf4; color: #166534; }
+    .chip-out { background: #fff1f2; color: #b91c1c; }
+    .chip-healthy .chip-dot { background: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,.12); }
+    .chip-out .chip-dot { background: #dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,.12); }
+    .hero-banner { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #1a56a0 100%); border-radius: 24px; padding: 2.5rem; margin-bottom: 2rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+    .hero-text h1 { color: #fff; font-size: 2rem; font-weight: 800; margin: 0 0 .35rem; }
+    .hero-text p { color: rgba(255,255,255,.6); margin: 0; font-size: .95rem; }
+    .btn-hero { padding: .6rem 1.4rem; border-radius: 12px; font-weight: 600; font-size: .875rem; text-decoration: none; display: inline-flex; align-items: center; gap: .4rem; transition: transform .15s; background: #fff; color: #0f172a; box-shadow: 0 4px 16px rgba(0,0,0,.2); }
+    .btn-hero:hover { transform: translateY(-2px); text-decoration: none; color: #0f172a; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+    @@media (max-width: 992px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+    @@media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+    .card { background: #fff; border-radius: 20px; box-shadow: 0 2px 12px rgba(0,0,0,.06); overflow: hidden; }
+    .card-top { background: linear-gradient(135deg, #0f172a, #1e3a5f); padding: 1.5rem 1.75rem; }
+    .card-name { color: #fff; font-size: 1.1rem; font-weight: 800; margin: 0; }
+    .card-body { padding: 1.25rem 1.75rem; color: #64748b; font-size: .85rem; }
+    .card-footer { padding: 1rem 1.75rem; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; gap: .5rem; }
+    .btn-edit, .btn-delete { display: inline-flex; align-items: center; gap: .35rem; padding: .45rem 1rem; border-radius: 10px; font-size: .8rem; font-weight: 700; text-decoration: none; transition: all .12s; border: none; cursor: pointer; }
+    .btn-edit:hover, .btn-delete:hover { transform: translateY(-1px); text-decoration: none; }
+    .btn-edit { background: #fef3c7; color: #92400e; } .btn-delete { background: #fee2e2; color: #991b1b; }
 
-    .page-root { background: #f0f2f7; min-height: 100vh; padding: 2rem 1.5rem; }
-
-    .page-hero {
-        background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #1a56a0 100%);
-        border-radius: 20px; padding: 2rem 2.5rem; margin-bottom: 2rem;
-        display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+    #delete-warehouse-modal {
+        display: none;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        background: rgba(15, 23, 42, 0.85) !important;
+        z-index: 999999 !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 1rem;
     }
-    .page-hero-text h1 { color: #fff; font-size: 1.6rem; font-weight: 800; margin: 0 0 .3rem; }
-    .page-hero-text p  { color: rgba(255,255,255,.55); font-size: .875rem; margin: 0; }
-
-    .btn-hero-white {
-        padding: .6rem 1.4rem; border-radius: 12px; font-weight: 600; font-size: .875rem;
-        background: #fff; color: #0f172a; border: none; text-decoration: none;
-        display: inline-flex; align-items: center; gap: .4rem; transition: transform .15s;
-        box-shadow: 0 4px 14px rgba(0,0,0,.15);
+    #delete-warehouse-modal.show {
+        display: flex !important;
     }
-    .btn-hero-white:hover { transform: translateY(-2px); text-decoration: none; color: #0f172a; }
-
-    .wh-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
-    @@media (max-width: 992px) { .wh-grid { grid-template-columns: repeat(2, 1fr); } }
-    @@media (max-width: 600px)  { .wh-grid { grid-template-columns: 1fr; } }
-
-    .wh-card {
-        background: #fff; border-radius: 20px; box-shadow: 0 2px 12px rgba(0,0,0,.06);
-        overflow: hidden; transition: transform .15s, box-shadow .15s;
-        display: flex; flex-direction: column;
+    #delete-warehouse-modal .modal-card {
+        width: 100%;
+        max-width: 440px;
+        background: #ffffff !important;
+        border-radius: 20px;
+        box-shadow: 0 28px 90px rgba(0, 0, 0, 0.5);
+        overflow: hidden;
     }
-    .wh-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,.1); }
-
-    .wh-card-top {
-        background: linear-gradient(135deg, #0f172a, #1e3a5f);
-        padding: 1.75rem 1.75rem 1.25rem;
-        position: relative; overflow: hidden;
+    #delete-warehouse-modal .modal-head {
+        padding: 1.25rem 1.5rem;
+        background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+        color: #fff;
     }
-    .wh-card-top::after {
-        content: '';
-        position: absolute; bottom: -1px; left: 0; right: 0;
-        height: 20px; background: #fff; border-radius: 20px 20px 0 0;
+    #delete-warehouse-modal .modal-head h3 { margin: 0; font-size: 1rem; font-weight: 800; }
+    #delete-warehouse-modal .modal-body {
+        padding: 1.25rem 1.5rem;
+        color: #334155;
+        font-size: .9rem;
+        line-height: 1.6;
+        background: #fff !important;
     }
-
-    .wh-icon {
-        width: 48px; height: 48px; background: rgba(255,255,255,.12);
-        border: 1.5px solid rgba(255,255,255,.18); border-radius: 14px;
-        display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;
+    #delete-warehouse-modal .modal-actions {
+        display: flex;
+        gap: .75rem;
+        justify-content: flex-end;
+        padding: 0 1.5rem 1.5rem;
+        background: #fff !important;
     }
-    .wh-icon svg { width: 24px; height: 24px; }
-
-    .wh-name { color: #fff; font-size: 1.1rem; font-weight: 800; margin: 0 0 .2rem; }
-
-    .wh-card-body { padding: 1.25rem 1.75rem; flex: 1; display: flex; flex-direction: column; gap: .75rem; }
-
-    .wh-location {
-        display: flex; align-items: center; gap: .5rem;
-        font-size: .85rem; color: #64748b; font-weight: 500;
+    #delete-warehouse-modal .modal-btn {
+        border: none;
+        border-radius: 12px;
+        padding: .65rem 1.25rem;
+        font-size: .875rem;
+        font-weight: 700;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all .15s;
     }
-    .wh-location svg { width: 15px; height: 15px; flex-shrink: 0; }
-
-    .wh-card-footer {
-        padding: 1rem 1.75rem; border-top: 1px solid #f1f5f9;
-        display: flex; justify-content: flex-end;
-    }
-
-    .btn-edit {
-        display: inline-flex; align-items: center; gap: .35rem;
-        padding: .45rem 1rem; border-radius: 10px; font-size: .8rem; font-weight: 700;
-        background: #fef3c7; color: #92400e; text-decoration: none; transition: all .12s;
-    }
-    .btn-edit:hover { filter: brightness(1.05); transform: translateY(-1px); text-decoration: none; color: #92400e; }
-    .btn-edit svg { width: 13px; height: 13px; }
-
-    .empty-state {
-        text-align: center; padding: 5rem 2rem; background: #fff;
-        border-radius: 20px; box-shadow: 0 2px 12px rgba(0,0,0,.06); color: #94a3b8;
-    }
-    .empty-state svg { width: 72px; height: 72px; margin-bottom: 1rem; opacity: .4; }
-    .empty-state h3 { font-size: 1rem; font-weight: 700; color: #64748b; margin: 0 0 .4rem; }
-    .empty-state p  { font-size: .875rem; margin: 0 0 1.5rem; }
-
-    .btn-add-first {
-        display: inline-flex; align-items: center; gap: .4rem;
-        padding: .65rem 1.5rem; background: #0f172a; color: #fff;
-        border-radius: 12px; font-size: .875rem; font-weight: 700;
-        text-decoration: none; transition: all .15s;
-    }
-    .btn-add-first:hover { filter: brightness(1.15); transform: translateY(-1px); text-decoration: none; color: #fff; }
+    #delete-warehouse-modal .modal-btn-cancel { background: #f1f5f9; color: #0f172a; }
+    #delete-warehouse-modal .modal-btn-cancel:hover { background: #e2e8f0; }
+    #delete-warehouse-modal .modal-btn-danger { background: #ef4444; color: #fff; box-shadow: 0 4px 12px rgba(239,68,68,.4); }
+    #delete-warehouse-modal .modal-btn-danger:hover { background: #dc2626; }
 </style>
 
-<div class="page-root">
-    <div class="page-hero">
-        <div class="page-hero-text">
+<div class="dashboard-root">
+    @if (TempData["Success"] != null)
+    {
+        <div class="summary-chip chip-healthy" style="margin-bottom:1rem;">
+            <span class="chip-dot"></span>@TempData["Success"]
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="summary-chip chip-out" style="margin-bottom:1rem;">
+            <span class="chip-dot"></span>@TempData["Error"]
+        </div>
+    }
+
+    <div class="hero-banner">
+        <div class="hero-text">
             <h1>Warehouses</h1>
             <p>Monitor and manage all storage locations across your network</p>
         </div>
-        <a asp-action="Create" class="btn-hero-white">
-            <svg viewBox="0 0 16 16" width="13" height="13" fill="none"><path d="M8 1v14M1 8h14" stroke="#0f172a" stroke-width="2.2" stroke-linecap="round"/></svg>
-            Add New Warehouse
-        </a>
+        <a asp-action="Create" class="btn-hero">Add New Warehouse</a>
     </div>
 
-    @if (!Model.Any())
-    {
-        <div class="empty-state">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="#cbd5e1" stroke-width="1.6" stroke-linejoin="round"/>
-                <rect x="9" y="14" width="6" height="8" rx="1" stroke="#cbd5e1" stroke-width="1.6"/>
-            </svg>
-            <h3>No Warehouses Yet</h3>
-            <p>Add your first warehouse to get started.</p>
-            <a asp-action="Create" class="btn-add-first">
-                <svg viewBox="0 0 16 16" width="13" height="13" fill="none"><path d="M8 1v14M1 8h14" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>
-                Add New Warehouse
-            </a>
-        </div>
-    }
-    else
-    {
-        <div class="wh-grid">
-            @foreach (var warehouse in Model)
-            {
-                <div class="wh-card">
-                    <div class="wh-card-top">
-                        <div class="wh-icon">
-                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/>
-                                <rect x="9" y="14" width="6" height="8" rx="1" stroke="#fff" stroke-width="1.8"/>
-                            </svg>
-                        </div>
-                        <div class="wh-name">@warehouse.Name</div>
-                    </div>
-                    <div class="wh-card-body">
-                        <div class="wh-location">
-                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="#94a3b8" stroke-width="1.8" stroke-linejoin="round"/>
-                                <circle cx="12" cy="10" r="3" stroke="#94a3b8" stroke-width="1.8"/>
-                            </svg>
-                            @warehouse.Location
-                        </div>
-                    </div>
-                    <div class="wh-card-footer">
-                        <a asp-action="Edit" asp-route-id="@warehouse.Id" class="btn-edit">
-                            <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M9 2l3 3L4 13H1v-3L9 2z" stroke="#92400e" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                            Edit
-                        </a>
-                    </div>
+    <div class="grid">
+        @foreach (var warehouse in Model)
+        {
+            <div class="card">
+                <div class="card-top">
+                    <div class="card-name">@warehouse.Name</div>
                 </div>
-            }
-        </div>
-    }
+                <div class="card-body">
+                    @warehouse.Location
+                </div>
+                <div class="card-footer">
+                    <a asp-action="Edit" asp-route-id="@warehouse.Id" class="btn-edit">Edit</a>
+                    <button type="button" class="btn-delete" onclick="confirmDeleteWarehouse(@warehouse.Id, '@warehouse.Name')">Delete</button>
+                </div>
+            </div>
+        }
+    </div>
 </div>
+
+<form id="delete-warehouse-form" asp-action="Delete" method="post" style="display:none;">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="id" id="delete-warehouse-id" />
+</form>
+
+<div id="delete-warehouse-modal" onclick="if(event.target===this) closeDeleteWarehouseModal()">
+    <div class="modal-card">
+        <div class="modal-head"><h3>🗑️ Delete warehouse</h3></div>
+        <div class="modal-body">Delete <strong id="delete-warehouse-name"></strong>? This action cannot be undone.</div>
+        <div class="modal-actions">
+            <button type="button" class="modal-btn modal-btn-cancel" onclick="closeDeleteWarehouseModal()">Cancel</button>
+            <button type="button" class="modal-btn modal-btn-danger" onclick="document.getElementById('delete-warehouse-form').submit()">Delete</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var modal = document.getElementById('delete-warehouse-modal');
+        document.body.appendChild(modal);
+    });
+
+    function confirmDeleteWarehouse(id, name) {
+        document.getElementById('delete-warehouse-id').value = id;
+        document.getElementById('delete-warehouse-name').textContent = name;
+        document.getElementById('delete-warehouse-modal').classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeDeleteWarehouseModal() {
+        document.getElementById('delete-warehouse-modal').classList.remove('show');
+        document.body.style.overflow = '';
+    }
+</script>

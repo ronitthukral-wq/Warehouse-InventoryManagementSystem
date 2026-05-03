@@ -1,189 +1,183 @@
-﻿@model IEnumerable<Inventory.Contracts.Responses.UserResponse>
+﻿@model IEnumerable<UserResponse>
 @{
-    ViewData["Title"] = "Personnel";
+    ViewData["Title"] = "Store Managers";
 }
 
 <style>
     @@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-    body, .page-root { font-family: 'Plus Jakarta Sans', sans-serif; }
-
-    .page-root { background: #f0f2f7; min-height: 100vh; padding: 2rem 1.5rem; }
-
-    .page-hero {
-        background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #1a56a0 100%);
-        border-radius: 20px; padding: 2rem 2.5rem; margin-bottom: 2rem;
-        display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
-    }
-    .page-hero-text h1 { color: #fff; font-size: 1.6rem; font-weight: 800; margin: 0 0 .3rem; }
-    .page-hero-text p  { color: rgba(255,255,255,.55); font-size: .875rem; margin: 0; }
-
-    .btn-hero-white {
-        padding: .6rem 1.4rem; border-radius: 12px; font-weight: 600; font-size: .875rem;
-        background: #fff; color: #0f172a; border: none; text-decoration: none;
-        display: inline-flex; align-items: center; gap: .4rem; transition: transform .15s;
-        box-shadow: 0 4px 14px rgba(0,0,0,.15);
-    }
-    .btn-hero-white:hover { transform: translateY(-2px); text-decoration: none; color: #0f172a; }
-
-    .toast-success {
-        background: #f0fdf4; border-left: 4px solid #22c55e; border-radius: 12px;
-        padding: .9rem 1.2rem; color: #166534; font-weight: 600; font-size: .9rem;
-        margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between;
-    }
-    .toast-close { background: none; border: none; cursor: pointer; font-size: 1.1rem; color: inherit; opacity: .6; padding: 0; }
-
+    body, .dashboard-root { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .dashboard-root { background: #f0f2f7; min-height: 100vh; padding: 2rem 1.5rem; }
+    .summary-chip { background: #fff; border-radius: 12px; padding: .7rem 1.1rem; font-size: .82rem; font-weight: 700; display: flex; align-items: center; gap: .5rem; box-shadow: 0 10px 28px rgba(15, 23, 42, .08); border: 1px solid rgba(148,163,184,.15); }
+    .chip-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .chip-healthy { background: #f0fdf4; color: #166534; }
+    .chip-out { background: #fff1f2; color: #b91c1c; }
+    .chip-healthy .chip-dot { background: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,.12); }
+    .chip-out .chip-dot { background: #dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,.12); }
+    .hero-banner { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #1a56a0 100%); border-radius: 24px; padding: 2.5rem; margin-bottom: 2rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+    .hero-text h1 { color: #fff; font-size: 2rem; font-weight: 800; margin: 0 0 .35rem; }
+    .hero-text p { color: rgba(255,255,255,.6); margin: 0; font-size: .95rem; }
+    .btn-hero { padding: .6rem 1.4rem; border-radius: 12px; font-weight: 600; font-size: .875rem; text-decoration: none; display: inline-flex; align-items: center; gap: .4rem; transition: transform .15s; background: #fff; color: #0f172a; box-shadow: 0 4px 16px rgba(0,0,0,.2); }
+    .btn-hero:hover { transform: translateY(-2px); text-decoration: none; color: #0f172a; }
     .panel { background: #fff; border-radius: 20px; box-shadow: 0 2px 12px rgba(0,0,0,.06); overflow: hidden; }
+    .panel-header { padding: 1.25rem 1.75rem; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between; }
+    .panel-title { font-size: .95rem; font-weight: 700; color: #0f172a; margin: 0; }
+    .table-wrap { overflow-x: auto; }
+    .man-table { width: 100%; border-collapse: collapse; }
+    .man-table thead th { padding: .75rem 1.75rem; font-size: .7rem; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: #94a3b8; background: #f8fafc; border-bottom: 1px solid #f1f5f9; }
+    .man-table tbody td { padding: .9rem 1.75rem; font-size: .875rem; color: #334155; border-bottom: 1px solid #f8fafc; }
+    .man-table tbody tr:hover td { background: #f8fafc; }
+    .badge-role { background: #dbeafe; color: #1e40af; border-radius: 999px; padding: .2rem .6rem; font-size: .72rem; font-weight: 700; text-transform: uppercase; }
+    .action-link { display: inline-flex; align-items: center; gap: .3rem; font-size: .78rem; font-weight: 600; border-radius: 8px; padding: .28rem .7rem; text-decoration: none; transition: all .12s; border: none; cursor: pointer; }
+    .action-link:hover { transform: translateY(-1px); text-decoration: none; }
+    .al-edit { background: #fef3c7; color: #92400e; } .al-delete { background: #fee2e2; color: #991b1b; }
 
-    .panel-header {
-        padding: 1.25rem 1.75rem; border-bottom: 1px solid #f1f5f9;
-        display: flex; align-items: center; justify-content: space-between;
+    #delete-user-modal {
+        display: none;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        background: rgba(15, 23, 42, 0.85) !important;
+        z-index: 999999 !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 1rem;
     }
-    .panel-title { font-size: .95rem; font-weight: 700; color: #0f172a; margin: 0; display: flex; align-items: center; gap: .5rem; }
-    .panel-title svg { width: 20px; height: 20px; }
-    .panel-count { background: #f1f5f9; color: #64748b; border-radius: 20px; padding: .2rem .7rem; font-size: .75rem; font-weight: 700; }
-
-    .usr-table { width: 100%; border-collapse: collapse; }
-    .usr-table thead th {
-        padding: .75rem 1.75rem; font-size: .7rem; font-weight: 700; letter-spacing: .6px;
-        text-transform: uppercase; color: #94a3b8; background: #f8fafc; border-bottom: 1px solid #f1f5f9;
+    #delete-user-modal.show {
+        display: flex !important;
     }
-    .usr-table tbody td {
-        padding: .95rem 1.75rem; font-size: .875rem; color: #334155;
-        border-bottom: 1px solid #f8fafc; vertical-align: middle;
+    #delete-user-modal .modal-card {
+        width: 100%;
+        max-width: 440px;
+        background: #ffffff !important;
+        border-radius: 20px;
+        box-shadow: 0 28px 90px rgba(0, 0, 0, 0.5);
+        overflow: hidden;
     }
-    .usr-table tbody tr:last-child td { border-bottom: none; }
-    .usr-table tbody tr:hover td { background: #f8fafc; }
-
-    .user-avatar {
-        width: 36px; height: 36px; border-radius: 10px;
-        background: linear-gradient(135deg, #1e3a5f, #1a56a0);
-        display: inline-flex; align-items: center; justify-content: center;
-        color: #fff; font-size: .8rem; font-weight: 700; margin-right: .6rem; flex-shrink: 0;
+    #delete-user-modal .modal-head {
+        padding: 1.25rem 1.5rem;
+        background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+        color: #fff;
     }
-    .user-cell { display: flex; align-items: center; }
-    .user-email { font-weight: 600; color: #0f172a; }
-
-    .role-badge { border-radius: 7px; padding: .22rem .6rem; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; white-space: nowrap; }
-    .role-admin   { background: #fee2e2; color: #991b1b; }
-    .role-manager { background: #dbeafe; color: #1e40af; }
-
-    .wh-text { font-size: .85rem; color: #334155; }
-    .wh-unassigned { font-size: .82rem; color: #94a3b8; font-style: italic; }
-
-    .action-link {
-        display: inline-flex; align-items: center; gap: .3rem;
-        font-size: .78rem; font-weight: 600; border-radius: 8px;
-        padding: .28rem .7rem; text-decoration: none; transition: all .12s;
-        background: #fef3c7; color: #92400e;
+    #delete-user-modal .modal-head h3 { margin: 0; font-size: 1rem; font-weight: 800; }
+    #delete-user-modal .modal-body {
+        padding: 1.25rem 1.5rem;
+        color: #334155;
+        font-size: .9rem;
+        line-height: 1.6;
+        background: #fff !important;
     }
-    .action-link:hover { transform: translateY(-1px); text-decoration: none; filter: brightness(1.05); }
-
-    .readonly-label { font-size: .78rem; color: #cbd5e1; font-style: italic; }
-
-    .empty-state { text-align: center; padding: 4rem 2rem; color: #94a3b8; }
-    .empty-state svg { width: 64px; height: 64px; margin-bottom: 1rem; opacity: .45; }
-    .empty-state p { font-size: .9rem; margin: 0; }
+    #delete-user-modal .modal-actions {
+        display: flex;
+        gap: .75rem;
+        justify-content: flex-end;
+        padding: 0 1.5rem 1.5rem;
+        background: #fff !important;
+    }
+    #delete-user-modal .modal-btn {
+        border: none;
+        border-radius: 12px;
+        padding: .65rem 1.25rem;
+        font-size: .875rem;
+        font-weight: 700;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all .15s;
+    }
+    #delete-user-modal .modal-btn-cancel { background: #f1f5f9; color: #0f172a; }
+    #delete-user-modal .modal-btn-cancel:hover { background: #e2e8f0; }
+    #delete-user-modal .modal-btn-danger { background: #ef4444; color: #fff; box-shadow: 0 4px 12px rgba(239,68,68,.4); }
+    #delete-user-modal .modal-btn-danger:hover { background: #dc2626; }
 </style>
 
-<div class="page-root">
-    <div class="page-hero">
-        <div class="page-hero-text">
-            <h1>Personnel</h1>
-            <p>Manage administrators and store managers across your warehouses</p>
-        </div>
-        <a asp-action="Create" class="btn-hero-white">
-            <svg viewBox="0 0 16 16" width="13" height="13" fill="none"><path d="M8 1v14M1 8h14" stroke="#0f172a" stroke-width="2.2" stroke-linecap="round"/></svg>
-            Register Manager
-        </a>
-    </div>
-
+<div class="dashboard-root">
     @if (TempData["Success"] != null)
     {
-        <div class="toast-success" id="toast-s">
-            <span>✓ &nbsp;@TempData["Success"]</span>
-            <button class="toast-close" onclick="document.getElementById('toast-s').remove()">✕</button>
+        <div class="summary-chip chip-healthy" style="margin-bottom:1rem;">
+            <span class="chip-dot"></span>@TempData["Success"]
         </div>
     }
+    @if (TempData["Error"] != null)
+    {
+        <div class="summary-chip chip-out" style="margin-bottom:1rem;">
+            <span class="chip-dot"></span>@TempData["Error"]
+        </div>
+    }
+
+    <div class="hero-banner">
+        <div class="hero-text">
+            <h1>Store Managers</h1>
+            <p>Manage store manager accounts and warehouse assignments</p>
+        </div>
+        <a asp-action="Create" class="btn-hero">New Manager</a>
+    </div>
 
     <div class="panel">
         <div class="panel-header">
-            <p class="panel-title">
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="#0ea5e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                    <circle cx="9" cy="7" r="4" stroke="#0ea5e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="#0ea5e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="#0ea5e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                All Users
-            </p>
-            <span class="panel-count">@Model.Count() members</span>
+            <p class="panel-title">All Managers</p>
+            <span style="font-size:.75rem;color:#94a3b8;font-weight:600;">@Model.Count() items</span>
         </div>
-
-        <table class="usr-table">
-            <thead>
-                <tr>
-                    <th>Email / Username</th>
-                    <th>Role</th>
-                    <th>Assigned Warehouse</th>
-                    <th style="text-align:right">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (!Model.Any())
-                {
-                    <tr><td colspan="4">
-                        <div class="empty-state">
-                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="#cbd5e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-                                <circle cx="9" cy="7" r="4" stroke="#cbd5e1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                            <p>No users found. Click <strong>Register Manager</strong> to add one.</p>
-                        </div>
-                    </td></tr>
-                }
-                else
-                {
-                    @foreach (var user in Model)
+        <div class="table-wrap">
+            <table class="man-table">
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Assigned Warehouse</th>
+                        <th>Role</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
                     {
-                        string initial = string.IsNullOrEmpty(user.Email) ? "?" : user.Email[0].ToString().ToUpper();
-                        string roleClass = user.Role == "Admin" ? "role-admin" : "role-manager";
-                        string roleLabel = string.IsNullOrEmpty(user.Role) ? "—" : user.Role;
-
                         <tr>
+                            <td>@item.Email</td>
+                            <td>@item.AssignedWarehouseName</td>
+                            <td><span class="badge-role">@item.Role</span></td>
                             <td>
-                                <div class="user-cell">
-                                    <div class="user-avatar">@initial</div>
-                                    <span class="user-email">@user.Email</span>
-                                </div>
-                            </td>
-                            <td><span class="role-badge @roleClass">@roleLabel</span></td>
-                            <td>
-                                @if (string.IsNullOrEmpty(user.AssignedWarehouseName))
-                                {
-                                    <span class="wh-unassigned">No warehouse assigned</span>
-                                }
-                                else
-                                {
-                                    <span class="wh-text">@user.AssignedWarehouseName</span>
-                                }
-                            </td>
-                            <td style="text-align:right">
-                                @if (user.Role == "StoreManager")
-                                {
-                                    <a asp-action="Edit" asp-route-id="@user.Id" class="action-link">
-                                        <svg viewBox="0 0 14 14" width="11" height="11" fill="none"><path d="M9 2l3 3L4 13H1v-3L9 2z" stroke="#92400e" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                                        Edit
-                                    </a>
-                                }
-                                else
-                                {
-                                    <span class="readonly-label">Read-only</span>
-                                }
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="action-link al-edit">Edit</a>
+                                <button type="button" class="action-link al-delete" onclick="confirmDeleteUser('@item.Id', '@item.Email')">Delete</button>
                             </td>
                         </tr>
                     }
-                }
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
+
+<form id="delete-user-form" asp-action="Delete" method="post" style="display:none;">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="id" id="delete-user-id" />
+</form>
+
+<div id="delete-user-modal" onclick="if(event.target===this) closeDeleteUserModal()">
+    <div class="modal-card">
+        <div class="modal-head"><h3>🗑️ Delete store manager</h3></div>
+        <div class="modal-body">Delete <strong id="delete-user-email"></strong>? This action cannot be undone.</div>
+        <div class="modal-actions">
+            <button type="button" class="modal-btn modal-btn-cancel" onclick="closeDeleteUserModal()">Cancel</button>
+            <button type="button" class="modal-btn modal-btn-danger" onclick="document.getElementById('delete-user-form').submit()">Delete</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var modal = document.getElementById('delete-user-modal');
+        document.body.appendChild(modal);
+    });
+
+    function confirmDeleteUser(id, email) {
+        document.getElementById('delete-user-id').value = id;
+        document.getElementById('delete-user-email').textContent = email;
+        document.getElementById('delete-user-modal').classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeDeleteUserModal() {
+        document.getElementById('delete-user-modal').classList.remove('show');
+        document.body.style.overflow = '';
+    }
+</script>

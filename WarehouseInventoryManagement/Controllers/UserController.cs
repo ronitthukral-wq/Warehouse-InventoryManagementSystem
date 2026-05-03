@@ -56,7 +56,6 @@ public class UserController : BaseController
         {
             Id = user.Id,
             Email = user.Email,
-            // Try to recover the WarehouseId from the displayed name
             WarehouseId = await ResolveWarehouseIdAsync(user.AssignedWarehouseName)
         };
 
@@ -87,7 +86,14 @@ public class UserController : BaseController
         return View(request);
     }
 
-    // ----- Helpers -----
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Delete(string id)
+    {
+        var response = await Mediator.Send(new DeleteStoreManagerRequest { Id = id });
+        TempData[response.Success ? "Success" : "Error"] = response.Message;
+        return RedirectToAction(nameof(Index));
+    }
 
     private async Task PopulateWarehousesAsync(int? selectedId = null)
     {

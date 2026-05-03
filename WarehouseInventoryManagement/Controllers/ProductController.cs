@@ -79,12 +79,20 @@ public class ProductController : BaseController
         return View(request);
     }
 
-    // GET: /Product/LowStockAlerts  — Admin only
-    // Shows every product that is running low on stock, grouped by warehouse.
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> LowStockAlerts()
     {
         var items = await Mediator.Send(new GetLowStockReportRequest());
         return View(items);
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Admin")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var response = await Mediator.Send(new DeleteProductRequest { Id = id });
+        TempData[response.Success ? "Success" : "Error"] = response.Message;
+        return RedirectToAction(nameof(Index));
     }
 }

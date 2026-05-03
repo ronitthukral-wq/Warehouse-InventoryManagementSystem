@@ -25,10 +25,7 @@ public class WarehouseController : BaseController
 
         if (response.Success)
         {
-            // Store the message for the next request
             TempData["SuccessMessage"] = response.Message;
-
-            // Redirect specifically to the Dashboard
             return RedirectToAction("Index", "Dashboard");
         }
 
@@ -39,10 +36,8 @@ public class WarehouseController : BaseController
     public async Task<IActionResult> Edit(int id)
     {
         var warehouse = await Mediator.Send(new GetWarehouseByIdRequest { Id = id });
-
         if (warehouse == null) return NotFound();
 
-        // Map the Response to a Request model to fix the Type Mismatch
         var model = new UpdateWarehouseRequest
         {
             Id = warehouse.Id,
@@ -69,5 +64,14 @@ public class WarehouseController : BaseController
 
         ModelState.AddModelError("", response.Message);
         return View(request);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var response = await Mediator.Send(new DeleteWarehouseRequest { Id = id });
+        TempData[response.Success ? "Success" : "Error"] = response.Message;
+        return RedirectToAction(nameof(Index));
     }
 }
